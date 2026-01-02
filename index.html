@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>My Personal Site</title>
+    <meta name="description" content="Portfolio and personal website">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="home">
+    <header class="site-header">
+        <nav class="nav">
+            <a class="logo" href="#home">
+                <img src="images/logo.png" alt="Logo" class="logo-icon">
+            </a>
+            <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#projects">Projects</a></li>
+                <li><a href="#articles">Articles</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main id="home" class="hero">
+        <div class="hero-inner">
+            <h1>Things I've built, places I've been, <span>thoughts I've kept</span></h1>
+            <svg class="curly-line" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+                <path d="M30,60 Q50,40 70,60 Q90,80 110,60 Q130,40 150,60 Q170,80 190,60" 
+                      stroke="#f5d8c8" 
+                      stroke-width="3" 
+                      fill="none" 
+                      stroke-linecap="round" 
+                      stroke-linejoin="round"
+                      class="draw-line"/>
+            </svg>
+            <p class="subtitle">A personal record in fragments</p>
+            <div class="hero-cta">
+                <a class="btn primary" href="#projects">View Projects</a>
+                <a class="btn" href="#contact">Contact Me</a>
+            </div>
+        </div>
+    </main>
+
+    <section id="about" class="about-hero">
+        <div class="container">
+            <div class="about-banner">
+                <div class="profile-image">
+                    <img src="images/profile.JPEG" alt="My Profile" />
+                </div>
+                <div class="about-text">
+                    <h1>Hello! I'm Alina.</h1>
+                    <p>Good morning! I'm a third-year student in the Department of Information Management at National Taiwan University. My interests include photography, listening to music, and lying on the grass daydreaming when the weather is nice. Although I'm in an information-related major, I wouldn't call myself a hardcore tech person—I'm interested in interaction design, UI/UX, HCI, and other tech-related fields. </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section about-content">
+        <div class="container">
+            <h2>More About me......</h2>
+            <ol class="timeline">
+                <li>
+                    <div class="time">2025 Sep.</div>
+                    <div class="event-box">
+                      <div class="event">Launching this website</div>
+                      <div class="event-desc">I had planned to start it over the summer, but ended up putting it off until this assignment came along.</div>
+                    </div>
+                </li>
+                <li>
+                    <div class="time">2024 May</div>
+                    <div class="event-box">
+                    <div class="event">NTU ArtFest 29th – Graphic Design Team</div>
+                    <div class="event-desc">Worked alongside many incredibly talented people!</div>
+                    </div>
+                </li>
+                <li>
+                    <div class="time">2023 Sep.</div>
+                    <div class="event-box">
+                      <div class="event">Starting my studies at NTU</div>
+                      <div class="event-desc">A kid from Taichung venturing into Taipei!</div>
+                    </div>
+                </li>
+                <li>
+                    <div class="time">2022 Oct.</div>
+                    <div class="event-box">
+                      <div class="event">Buying a film camera</div>
+                      <div class="event-desc">Still stuck in the point-and-shoot stage — not sure how deep this rabbit hole will go.</div>
+                    </div>
+                </li>
+                <li>
+                    <div class="time">2022 June</div>
+                    <div class="event-box">
+                      <div class="event">TCGS Editor 77th - President</div>
+                      <div class="event-desc">A challenging yet rewarding time, filled with experiences in publishing, editing, writing, and design.</div>
+                    </div>
+                </li>
+            </ol>
+
+            <div class="two-column-section">
+                <div>
+                    <h2>I'm listening to...</h2>
+                    <div class="pill-list">
+                        <a class="pill" href="https://open.spotify.com/album/3TCF95qK3XaMBjmEuXwQHQ?si=OCq1AOb7Qb2h6eaerGQEJQ" target="_blank" rel="noreferrer"><span>Spotify Link</span><span class="arrow">→</span></a>
+                    </div>
+                </div>
+
+                <div>
+                    <h2>Follow!</h2>
+                    <div class="pill-list">
+                        <a class="pill" href="https://www.instagram.com/c.3223__/" target="_blank" rel="noreferrer"><span>Instagram</span><span class="arrow">→</span></a>
+                        <a class="pill" href="https://www.linkedin.com/in/meng-yun-chuang-567aa5343/" target="_blank" rel="noreferrer"><span>LinkdIn</span><span class="arrow">→</span></a>
+                        <a class="pill" href="https://www.youtube.com/@ccl0ud3" target="_blank" rel="noreferrer"><span>YouTube</span><span class="arrow">→</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="projects" class="section projects">
+        <div class="container">
+            <h1>Projects</h1>
+            <div class="grid projects-grid">
+                <!-- Projects will be dynamically loaded from projects.json -->
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <div class="tile-grid">
+                <a class="tile" href="#articles">
+                    <h3>Blog</h3>
+                    <p>Read my latest writing</p>
+                    <span class="tile-link">→</span>
+                </a>
+                <a class="tile" href="#projects">
+                    <h3>Projects</h3>
+                    <p>See selected work</p>
+                    <span class="tile-link">→</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section id="articles" class="section">
+        <div class="container">
+            <h1>Articles</h1>
+
+            <!-- Photo Collections Section -->
+            <div class="photo-collections">
+                <h2>Photo Collections</h2>
+                <div class="photo-grid">
+                    <a href="post.html?slug=switzerland-photos" class="photo-item large">
+                        <img src="images/collections/swiss/000018.JPG" alt="Switzerland Collection">
+                        <div class="photo-overlay">
+                            <span class="photo-title">Switzerland Recorded On Film</span>
+                            <span class="photo-arrow">→</span>
+                        </div>
+                    </a>
+                    <a href="post.html?slug=winter-korea" class="photo-item small">
+                        <img src="images/collections/korea/000028030011.jpg" alt="Korea Collection">
+                        <div class="photo-overlay">
+                            <span class="photo-title">Korea in Winter Silence</span>
+                            <span class="photo-arrow">→</span>
+                        </div>
+                    </a>
+                    <a href="post.html?slug=europe-2024" class="photo-item medium">
+                        <img src="images/collections/2024euro/000001.JPG" alt="Europe 2024 Collection">
+                        <div class="photo-overlay">
+                            <span class="photo-title">Europe 2024: A Journey Through Time</span>
+                            <span class="photo-arrow">→</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Articles Section -->
+            <div class="articles-section">
+                <h2>Articles by Date</h2>
+                <div class="year-filter" id="year-filter">
+                    <button class="chip selected" data-year="2025">2025</button>
+                    <button class="chip" data-year="2024">2024</button>
+                </div>
+                <p>These articles were generated by AI to test the web page effect. Please ignore any nonsense.</p>
+                <ul class="post-list" id="post-list"></ul>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="section contact">
+        <div class="container">
+            <h2>Contact</h2>
+            <form class="contact-form" action="https://formspree.io/f/mpwjnybo" method="POST">
+                <input type="hidden" name="_subject" value="New message from your website!">
+                <input type="hidden" name="_next" value="?success=true">
+                <div class="form-row">
+                    <label>
+                        Name
+                        <input name="name" type="text" required>
+                    </label>
+                    <label>
+                        Email
+                        <input name="email" type="email" required>
+                    </label>
+                </div>
+                <label>
+                    Message
+                    <textarea name="message" rows="4" required></textarea>
+                </label>
+                <button class="btn primary" type="submit">Send</button>
+            </form>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <div class="container footer-grid">
+            <div>
+                <h2 class="footer-logo">CCLOUD</h2>
+            </div>
+            <ul class="footer-links">
+                <li><a href="#articles">Articles</a></li>
+                <li><a href="#projects">Projects</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+        <div class="container footer-bottom">© 2025 ccloud</div>
+    </footer>
+    <script type="module" src="script.js?v=3"></script>
+</body>
+</html>
+

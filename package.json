@@ -1,0 +1,17 @@
+{
+  "name": "ccloud-portfolio",
+  "version": "1.0.0",
+  "description": "A personal portfolio website built with TypeScript",
+  "main": "script.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "dev": "tsc --watch"
+  },
+  "keywords": ["portfolio", "typescript", "website"],
+  "author": "ccloud",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

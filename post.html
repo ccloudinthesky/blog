@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Post - ccloud</title>
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .post-hero{max-width:1000px;margin:0 auto 24px;border-radius:12px;overflow:hidden}
+        .post-meta{max-width:900px;margin:0 auto 16px;color:var(--muted)}
+        .post-title{max-width:900px;margin:0 auto 12px;font-size:56px;line-height:1.1}
+        .tag{background:#acbedd;color:#7a2e2a;border-radius:999px;padding:6px 12px;font-size:14px}
+        .post-body{max-width:900px;margin:24px auto;font-size:20px}
+        hr.sep{max-width:900px;margin:16px auto;border:none;border-top:1px solid var(--border)}
+        
+        /* Loading state */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+            font-size: 18px;
+            color: var(--muted);
+        }
+        
+        .loading::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-top: 2px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Hide content initially */
+        .post-content {
+            display: none;
+        }
+        
+        .post-content.loaded {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <nav class="nav">
+            <a class="logo" href="index.html#home">
+                <img src="images/logo.png" alt="Logo" class="logo-icon">
+            </a>
+            <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+            <ul class="nav-links">
+                <li><a href="index.html#home">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="projects.html">Projects</a></li>
+                <li><a href="article.html">Articles</a></li>
+                <li><a href="index.html#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="section">
+        <!-- Loading state -->
+        <div class="loading" id="loading">
+            Loading article...
+        </div>
+        
+        <!-- Post content (hidden initially) -->
+        <div class="post-content" id="post-content">
+            <div class="post-hero">
+                <img id="post-image" src="" alt="cover" style="width:100%;display:block">
+            </div>
+            <div class="post-meta">
+                <span id="post-date"></span>
+            </div>
+            <h1 class="post-title" id="post-title"></h1>
+            <div class="post-meta"><span id="post-tag" class="tag"></span></div>
+            <hr class="sep">
+            <article class="post-body" id="post-body">
+            </article>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer-grid">
+            <div>
+                <h2 class="footer-logo">CCLOUD</h2>
+            </div>
+            <ul class="footer-links">
+                <li><a href="article.html">Articles</a></li>
+                <li><a href="projects.html">Projects</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="index.html#contact">Contact</a></li>
+            </ul>
+        </div>
+        <div class="container footer-bottom">© 2025 ccloud</div>
+    </footer>
+    <script type="module" src="script.js?v=3"></script>
+</body>
+</html>
+
