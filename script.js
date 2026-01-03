@@ -1,5 +1,3 @@
-// Global variables
-let currentYear = 2025;
 // Fallback data
 const FALLBACK_ARTICLES = [
     { id: 'ai-meal-plan', title: 'Improving daily life with an AI meal plan', date: '2025-01-18' },
@@ -248,39 +246,6 @@ async function loadPostContent(slug) {
     }
 }
 // UI rendering functions
-function renderHomePosts(articles) {
-    const homeList = document.getElementById('home-posts');
-    if (homeList) {
-        const latest = articles.sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3);
-        latest.forEach(p => {
-            const d = new Date(p.date);
-            const li = document.createElement('li');
-            li.className = 'post-row';
-            li.innerHTML = `<span class="post-date">${d.toLocaleString('en-US', { month: 'short' })} ${d.getDate()}</span>
-                            <a class="post-title" href="post.html?slug=${p.id}">${p.title}</a>
-                            <span class="post-arrow">→</span>`;
-            homeList.appendChild(li);
-        });
-    }
-}
-function renderArticleList(articles, year) {
-    const postList = document.getElementById('post-list');
-    if (postList) {
-        postList.innerHTML = '';
-        const filteredArticles = articles.filter(p => new Date(p.date).getFullYear() === year);
-        console.log(`Filtering for year ${year}:`, filteredArticles);
-        filteredArticles.sort((a, b) => b.date.localeCompare(a.date))
-            .forEach((p, index) => {
-            const d = new Date(p.date);
-            const li = document.createElement('li');
-            li.className = 'post-row';
-            li.innerHTML = `<span class="post-date">${d.toLocaleString('en-US', { month: 'short' })} ${d.getDate()}</span>
-                                <a class="post-title" href="post.html?slug=${p.id}">${p.title}</a>
-                                <span class="post-arrow">→</span>`;
-            postList.appendChild(li);
-        });
-    }
-}
 function renderProjects(projects) {
     const allGrids = document.querySelectorAll('.projects-grid');
     console.log('All elements with projects-grid class:', allGrids);
@@ -345,45 +310,10 @@ function renderPostContent(post) {
     }
     console.log('Post loaded successfully:', post.title);
 }
-// Event handlers
-function handleYearFilterClick(event) {
-    const btn = event.target.closest('button[data-year]');
-    if (!btn)
-        return;
-    currentYear = Number(btn.dataset.year);
-    const yearFilter = document.getElementById('year-filter');
-    if (yearFilter) {
-        [...yearFilter.querySelectorAll('button')].forEach(b => b.classList.toggle('selected', b === btn));
-    }
-    // Re-render articles for the selected year
-    loadArticles().then(articles => {
-        if (articles.length === 0) {
-            articles = FALLBACK_ARTICLES;
-        }
-        renderArticleList(articles, currentYear);
-    });
-}
 // Main initialization
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize navigation
     initializeNavigation();
-    // Load and populate articles
-    loadArticles().then(articles => {
-        // Use fallback if no articles loaded
-        if (articles.length === 0) {
-            console.log('Using fallback articles data');
-            articles = FALLBACK_ARTICLES;
-        }
-        console.log('Articles to display:', articles);
-        // Render home posts
-        renderHomePosts(articles);
-        // Setup year filter
-        const yearFilter = document.getElementById('year-filter');
-        if (yearFilter) {
-            renderArticleList(articles, currentYear);
-            yearFilter.addEventListener('click', handleYearFilterClick);
-        }
-    });
     // Load and populate projects
     loadProjects().then(projects => {
         console.log('Projects to display:', projects);
