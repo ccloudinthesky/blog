@@ -23,7 +23,7 @@
 
 - **推薦：使用本地伺服器（完整功能 + 動畫效果）：**
   ```powershell
-  python -m http.server 8080
+  python3 -m http.server 8080
   # 然後開啟此網址
   http://localhost:8080/wp1141/hw1/index.html
   ```
