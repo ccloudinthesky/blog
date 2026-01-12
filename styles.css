@@ -138,14 +138,13 @@ h1, h2, h3, h4, h5, h6, .hero h1, .about-banner h1{
     right: 0;
     z-index: 50;
     transition: all 0.3s ease;
-    background: transparent;
+    background: hsla(40, 20%, 96%, 0.85);
+    backdrop-filter: blur(12px);
 }
 
 .site-header.scrolled {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    background: hsla(40, 20%, 96%, 0.95);
+    backdrop-filter: blur(16px);
 }
 
 .nav {
@@ -154,7 +153,7 @@ h1, h2, h3, h4, h5, h6, .hero h1, .about-banner h1{
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.5rem 2rem;
+    padding: 1rem 1rem;
 }
 
 .logo {
@@ -167,6 +166,20 @@ h1, h2, h3, h4, h5, h6, .hero h1, .about-banner h1{
     gap: 0.5rem;
     font-family: var(--font-display);
     font-size: 1.25rem;
+    border: none !important;
+    padding: 0;
+    background: none !important;
+    transition: none;
+}
+
+.logo:hover,
+.logo:focus,
+.logo:active {
+    background: none !important;
+    border: none !important;
+    color: var(--text);
+    transform: none;
+    box-shadow: none;
 }
 
 .logo-icon {
@@ -193,7 +206,7 @@ h1, h2, h3, h4, h5, h6, .hero h1, .about-banner h1{
     padding: 0;
 }
 
-.nav a {
+.nav-links a {
     color: var(--text);
     text-decoration: none;
     font-family: var(--font-body);
@@ -201,35 +214,37 @@ h1, h2, h3, h4, h5, h6, .hero h1, .about-banner h1{
     font-weight: 500;
     padding: 0.5rem 1.25rem;
     border: 1px solid var(--border);
-    border-radius: 0.5rem;
+    border-radius: 1.5rem;
     transition: all 0.3s ease;
 }
 
-.nav a:hover {
+.nav-links a:hover {
     background: var(--text);
     color: var(--bg);
     border-color: var(--text);
 }
 
-.nav a.active {
+.nav-links a.active {
     background: var(--text);
     color: var(--bg);
     border-color: var(--text);
 }
 
 .hero {
-    padding: 8rem 0;
-    padding-top: 10rem;
-    min-height: 100vh;
+    padding: 4rem 0;
+    padding-top: 6rem;
+    min-height: auto;
 }
 
 .home .hero {
-    padding-top: 12rem;
+    padding-top: 8rem;
 }
 
 /* Hero Title with Animation */
 .hero-title-wrapper {
-    margin-bottom: 4rem;
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 1;
 }
 
 .hero-main-title {
@@ -279,7 +294,55 @@ h1, h2, h3, h4, h5, h6, .hero h1, .about-banner h1{
     }
 }
 
-/* Highlight Animation (選起來的效果) */
+/* Highlight Animation (選起來的效果) - 包含圓點、直線和選取底色 */
+.hero-highlight-wrapper {
+    position: relative;
+    display: inline-block;
+    padding-left: 1rem;
+    margin-left: -1rem;
+}
+
+/* 左側圓點 - 在垂直線最上方 */
+.hero-highlight-wrapper::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform: translateY(-50%);
+    width: 0.5rem;
+    height: 0.5rem;
+    background: var(--text);
+    border-radius: 50%;
+    z-index: 2;
+    opacity: 0;
+    animation: dot-appear 0.3s ease-out forwards;
+    animation-delay: 0.5s;
+}
+
+.hero-highlight-wrapper.hero-highlight-2::before {
+    animation-delay: 1.2s;
+}
+
+/* 左側垂直線 - 直接出現，不展開 */
+.hero-highlight-wrapper::after {
+    content: '';
+    position: absolute;
+    left: 0.25rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--text);
+    z-index: 1;
+    opacity: 0;
+    animation: line-appear 0.3s ease-out forwards;
+    animation-delay: 0.5s;
+}
+
+.hero-highlight-wrapper.hero-highlight-2::after {
+    animation-delay: 1.2s;
+}
+
+/* 選取底色 */
 .hero-highlight {
     position: relative;
     display: inline-block;
@@ -293,8 +356,33 @@ h1, h2, h3, h4, h5, h6, .hero h1, .about-banner h1{
     z-index: -1;
     transform-origin: left;
     animation: highlight-reveal 0.8s ease-out forwards;
-    animation-delay: 0.5s;
+    animation-delay: 0.8s;
     transform: scaleX(0);
+}
+
+.hero-highlight-wrapper.hero-highlight-2 .hero-highlight::after {
+    animation-delay: 1.5s;
+}
+
+/* 動畫定義 */
+@keyframes dot-appear {
+    0% {
+        opacity: 0;
+        transform: translateY(-50%) scale(0);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(-50%) scale(1);
+    }
+}
+
+@keyframes line-appear {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
 }
 
 @keyframes highlight-reveal {
@@ -311,13 +399,17 @@ h1, h2, h3, h4, h5, h6, .hero h1, .about-banner h1{
     display: grid;
     grid-template-columns: 1fr;
     gap: 2rem;
-    align-items: start;
+    align-items: end;
+    position: relative;
+    margin-top: -4rem;
 }
 
 @media (min-width: 768px) {
     .hero-three-column {
         grid-template-columns: 1fr 1fr 1fr;
         gap: 2rem;
+        align-items: end;
+        margin-top: -6rem;
     }
 }
 
@@ -370,6 +462,12 @@ h1, h2, h3, h4, h5, h6, .hero h1, .about-banner h1{
 /* Right Column - Photo */
 .hero-photo {
     position: relative;
+}
+
+@media (min-width: 768px) {
+    .hero-photo {
+        margin-top: -8rem;
+    }
 }
 
 .profile-photo-card {
@@ -563,8 +661,8 @@ h1, h2, h3, h4, h5, h6, .hero h1, .about-banner h1{
     border-radius: 1.5rem;
     overflow: hidden;
     background: linear-gradient(to bottom right, var(--accent-2), var(--border));
-}
-
+  }
+  
 .profile-image img {
     width: 100%;
     height: 100%;
