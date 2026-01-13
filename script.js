@@ -318,22 +318,16 @@ function renderProjects(projects) {
                 projectItem.classList.add('active');
             }
             
-            // Get images (one large, two small - using same image for now)
-            const largeImage = project.image;
-            const smallImages = [project.image, project.image];
+            // Get single image
+            const projectImage = project.image;
             
             projectItem.innerHTML = `
                 <div class="project-number">(${projectNumber})</div>
                 <div class="project-title">${project.title}</div>
                 <div class="project-images">
-                    <div class="project-image large">
-                        <img src="${largeImage}" alt="${project.title}">
+                    <div class="project-image">
+                        <img src="${projectImage}" alt="${project.title}">
                     </div>
-                    ${smallImages.map(img => `
-                        <div class="project-image small">
-                            <img src="${img}" alt="${project.title}">
-                        </div>
-                    `).join('')}
                 </div>
             `;
             
@@ -356,8 +350,8 @@ function renderProjects(projects) {
             folderTabs.appendChild(tab);
         });
         
-        // Render initial project details
-        updateProjectDetails(projects[0]);
+        // Render initial project details and set z-index
+        updateActiveProject(projects, projects[0].id);
     } else {
         console.log('No projects loaded, showing fallback message');
         projectsList.innerHTML = '<p>No projects available at the moment.</p>';
@@ -373,9 +367,29 @@ function updateActiveProject(projects, projectId) {
         item.classList.toggle('active', item.dataset.projectId === projectId);
     });
     
-    // Update active states for folder tabs
-    document.querySelectorAll('.folder-tab').forEach(tab => {
-        tab.classList.toggle('active', tab.dataset.projectId === projectId);
+    // Update active states and z-index for folder tabs
+    const tabs = Array.from(document.querySelectorAll('.folder-tab'));
+    const activeIndex = tabs.findIndex(tab => tab.dataset.projectId === projectId);
+    
+    tabs.forEach((tab, index) => {
+        const isActive = tab.dataset.projectId === projectId;
+        tab.classList.toggle('active', isActive);
+        
+        if (isActive) {
+            // 選中的標籤總是在最上層
+            tab.style.zIndex = '100';
+        } else {
+            // 計算 z-index：以選中標籤為基準
+            if (index < activeIndex) {
+                // 選中標籤左邊的標籤：越左邊越下層
+                tab.style.zIndex = String(index + 1);
+            } else {
+                // 選中標籤右邊的標籤：越右邊越下層
+                // 從右到左，z-index 遞增
+                const distanceFromRight = tabs.length - index;
+                tab.style.zIndex = String(distanceFromRight);
+            }
+        }
     });
     
     // Update project details in right column

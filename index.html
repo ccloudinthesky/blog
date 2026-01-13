@@ -76,46 +76,8 @@
         </div>
     </main>
 
-    <section id="projects" class="section projects">
-        <div class="container">
-            <h1>Projects</h1>
-            <div class="projects-layout">
-                <!-- Left Column - Project List -->
-                <div class="projects-left">
-                    <div class="projects-list">
-                        <!-- Projects will be dynamically loaded from projects.json -->
-                    </div>
-                </div>
-                
-                <!-- Right Column - Project Details (Folder Style) -->
-                <div class="projects-right">
-                    <div class="project-folder">
-                        <div class="folder-tabs">
-                            <!-- Tabs will be dynamically loaded -->
-                        </div>
-                        <div class="folder-content">
-                            <div class="project-category">
-                                <!-- Category label will be loaded -->
-                            </div>
-                            <div class="project-description">
-                                <!-- Description will be loaded -->
-                            </div>
-                            <div class="project-technologies">
-                                <!-- Technologies will be loaded -->
-                            </div>
-                            <div class="project-links">
-                                <!-- GitHub and Demo buttons will be loaded -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <section class="section about-content">
         <div class="container">
-            <h2>More About me......</h2>
             <ol class="timeline">
                 <li>
                     <div class="time">2025 Sep.</div>
@@ -153,26 +115,46 @@
                     </div>
                 </li>
             </ol>
+        </div>
+    </section>
 
-            <div class="two-column-section">
-                <div>
-                    <h2>I'm listening to...</h2>
-                    <div class="pill-list">
-                        <a class="pill" href="https://open.spotify.com/album/3TCF95qK3XaMBjmEuXwQHQ?si=OCq1AOb7Qb2h6eaerGQEJQ" target="_blank" rel="noreferrer"><span>Spotify Link</span><span class="arrow">→</span></a>
+    <section id="projects" class="section projects">
+        <div class="container">
+            <h1>Projects</h1>
+            <div class="projects-layout">
+                <!-- Left Column - Project List -->
+                <div class="projects-left">
+                    <div class="projects-list">
+                        <!-- Projects will be dynamically loaded from projects.json -->
                     </div>
                 </div>
-
-                <div>
-                    <h2>Follow!</h2>
-                    <div class="pill-list">
-                        <a class="pill" href="https://www.instagram.com/c.3223__/" target="_blank" rel="noreferrer"><span>Instagram</span><span class="arrow">→</span></a>
-                        <a class="pill" href="https://www.linkedin.com/in/meng-yun-chuang-567aa5343/" target="_blank" rel="noreferrer"><span>LinkdIn</span><span class="arrow">→</span></a>
-                        <a class="pill" href="https://www.youtube.com/@ccl0ud3" target="_blank" rel="noreferrer"><span>YouTube</span><span class="arrow">→</span></a>
+                
+                <!-- Right Column - Project Details (Folder Style) -->
+                <div class="projects-right">
+                    <div class="project-folder">
+                        <div class="folder-tabs">
+                            <!-- Tabs will be dynamically loaded -->
+                        </div>
+                        <div class="folder-content">
+                            <div class="project-category">
+                                <!-- Category label will be loaded -->
+                            </div>
+                            <div class="project-technologies">
+                                <!-- Technologies will be loaded -->
+                            </div>
+                            <div class="project-description">
+                                <!-- Description will be loaded -->
+                            </div>
+                            <div class="project-links">
+                                <!-- GitHub and Demo buttons will be loaded -->
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
+
 
     <section id="photos" class="section">
         <div class="container">
@@ -206,43 +188,21 @@
     </section>
 
     <section id="contact" class="section contact">
-        <div class="container">
-            <h2>Contact</h2>
-            <form class="contact-form" action="https://formspree.io/f/mpwjnybo" method="POST">
-                <input type="hidden" name="_subject" value="New message from your website!">
-                <input type="hidden" name="_next" value="?success=true">
-                <div class="form-row">
-                    <label>
-                        Name
-                        <input name="name" type="text" required>
-                    </label>
-                    <label>
-                        Email
-                        <input name="email" type="email" required>
-                    </label>
-                </div>
-                <label>
-                    Message
-                    <textarea name="message" rows="4" required></textarea>
-                </label>
-                <button class="btn primary" type="submit">Send</button>
-            </form>
+        <div class="container footer-grid">
+            <div>
+                <h2 class="footer-logo">Alina</h2>
+            </div>
+            <ul class="footer-links">
+                <li><a href="mailto:your-email@example.com" target="_blank" rel="noreferrer">Mail</a></li>
+                <li><a href="https://www.instagram.com/c.3223__/" target="_blank" rel="noreferrer">Instagram</a></li>
+                <li><a href="https://www.linkedin.com/in/meng-yun-chuang-567aa5343/" target="_blank" rel="noreferrer">LinkedIn</a></li>
+                <li><a href="https://www.youtube.com/@ccl0ud3" target="_blank" rel="noreferrer">YouTube</a></li>
+            </ul>
         </div>
     </section>
 
     <footer class="site-footer">
-        <div class="container footer-grid">
-            <div>
-                <h2 class="footer-logo">CCLOUD</h2>
-            </div>
-            <ul class="footer-links">
-                <li><a href="#photos">Photos</a></li>
-                <li><a href="#projects">Projects</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#contact">Contact</a></li>
-            </ul>
-        </div>
-        <div class="container footer-bottom">© 2025 ccloud</div>
+        <div class="footer-bottom">© 2025 ccloud</div>
     </footer>
     <script type="module" src="script.js?v=3"></script>
 </body>

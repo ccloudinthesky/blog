@@ -90,5 +90,36 @@
       "<h3>Results</h3>",
       "<p>EventMate has successfully processed over 500 event registrations and received positive feedback from both organizers and attendees for its ease of use and reliability.</p>"
     ]
+  },
+  "project4": {
+    "title": "Digital Art Gallery Platform",
+    "date": "2024-08-20",
+    "tag": "Web Design",
+    "image": "images/projects/flower_cover.png",
+    "body": [
+      "<p>An immersive digital gallery platform that showcases contemporary art collections with an interactive browsing experience. The platform combines elegant design with innovative navigation features.</p>",
+      "<h3>Project Overview</h3>",
+      "<p>This platform was designed to bridge the gap between physical art galleries and digital experiences, allowing art enthusiasts to explore collections from anywhere in the world.</p>",
+      "<h3>Key Features</h3>",
+      "<ul>",
+      "<li>Virtual gallery tours with 360-degree views</li>",
+      "<li>High-resolution artwork viewing</li>",
+      "<li>Curator notes and artist biographies</li>",
+      "<li>Interactive timeline of art movements</li>",
+      "<li>Social sharing capabilities</li>",
+      "<li>Mobile-optimized experience</li>",
+      "</ul>",
+      "<h3>Design Philosophy</h3>",
+      "<p>The design emphasizes minimalism to let the artwork speak for itself, using subtle animations and transitions to enhance the viewing experience without distraction.</p>",
+      "<h3>Technologies Used</h3>",
+      "<ul>",
+      "<li>Figma for interface design</li>",
+      "<li>Three.js for 3D gallery views</li>",
+      "<li>React for interactive components</li>",
+      "<li>GSAP for smooth animations</li>",
+      "</ul>",
+      "<h3>Impact</h3>",
+      "<p>The platform has attracted over 10,000 monthly visitors and received recognition for its innovative approach to digital art presentation.</p>"
+    ]
   }
 }
