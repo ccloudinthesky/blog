@@ -233,34 +233,193 @@ function renderArticleList(articles, year) {
         });
     }
 }
-function renderProjects(projects) {
-    const projectsGrid = document.querySelector('.projects-grid');
-    console.log('Projects grid element found:', projectsGrid);
-    if (projectsGrid) {
-        if (projects.length > 0) {
-            console.log('Loading', projects.length, 'projects');
-            // Clear existing hardcoded content
-            projectsGrid.innerHTML = '';
-            projects.forEach((project, index) => {
-                console.log('Creating tile for project:', project.title, 'with ID:', project.id);
-                const projectTile = document.createElement('a');
-                projectTile.className = 'card project-tile';
-                projectTile.href = `post.html?slug=${project.id}`;
-                projectTile.innerHTML = `
-                    <h3>${project.title}</h3>
-                    <img src="${project.image}" alt="${project.title} image" style="width:100%;border-radius:10px;margin-bottom:10px">
-                    ${renderTag(project.tag)}
-                `;
-                projectsGrid.appendChild(projectTile);
+function extractTechnologies(body) {
+    if (!body || !Array.isArray(body)) return [];
+    const bodyText = body.join(' ');
+    const techMatch = bodyText.match(/<h3>Technologies Used<\/h3>[\s\S]*?<ul>([\s\S]*?)<\/ul>/i);
+    if (techMatch) {
+        const listItems = techMatch[1].match(/<li>(.*?)<\/li>/g);
+        if (listItems) {
+            return listItems.map(item => {
+                // Extract only the tool name (before "for" or any description)
+                let tech = item.replace(/<[^>]*>/g, '').trim();
+                // Remove "for xxx" part
+                tech = tech.split(/ for | - |: /)[0].trim();
+                return tech;
             });
         }
-        else {
-            console.log('No projects loaded, showing fallback message');
-            projectsGrid.innerHTML = '<p>No projects available at the moment.</p>';
+    }
+    return [];
+}
+
+function extractLinks(body) {
+    if (!body || !Array.isArray(body)) return { github: '', demo: '' };
+    const bodyText = body.join(' ');
+    const links = { github: '', demo: '' };
+    
+    // Try to find GitHub link
+    const githubMatch = bodyText.match(/github\.com\/[^\s"']+/i);
+    if (githubMatch) {
+        links.github = 'https://' + githubMatch[0];
+    }
+    
+    // Try to find demo/video link
+    const demoMatch = bodyText.match(/(?:demo|video|youtube|vimeo)[^\s"']*https?:\/\/[^\s"']+/i);
+    if (demoMatch) {
+        const urlMatch = demoMatch[0].match(/https?:\/\/[^\s"']+/);
+        if (urlMatch) {
+            links.demo = urlMatch[0];
         }
     }
-    else {
-        console.error('Projects grid element not found!');
+    
+    return links;
+}
+
+function extractDescription(body) {
+    if (!body || !Array.isArray(body)) return '';
+    // Get the first paragraph that's not a heading
+    for (let i = 0; i < body.length; i++) {
+        const text = body[i];
+        if (text.startsWith('<p>') && !text.includes('<h3>')) {
+            return text.replace(/<[^>]*>/g, '').trim();
+        }
+    }
+    return '';
+}
+
+function renderProjects(projects) {
+    const projectsList = document.querySelector('.projects-list');
+    const folderTabs = document.querySelector('.folder-tabs');
+    const folderContent = document.querySelector('.folder-content');
+    
+    if (!projectsList || !folderTabs || !folderContent) {
+        console.error('Projects elements not found!');
+        return;
+    }
+    
+    if (projects.length > 0) {
+        console.log('Loading', projects.length, 'projects');
+        
+        // Clear existing content
+        projectsList.innerHTML = '';
+        folderTabs.innerHTML = '';
+        
+        let activeProjectId = projects[0].id;
+        
+        // Render left column - project list (only one visible at a time)
+        projects.forEach((project, index) => {
+            const projectNumber = String(index + 1).padStart(2, '0');
+            
+            // Create project item
+            const projectItem = document.createElement('div');
+            projectItem.className = 'project-item';
+            projectItem.dataset.projectId = project.id;
+            if (index === 0) {
+                projectItem.classList.add('active');
+            }
+            
+            // Get images (one large, two small - using same image for now)
+            const largeImage = project.image;
+            const smallImages = [project.image, project.image];
+            
+            projectItem.innerHTML = `
+                <div class="project-number">(${projectNumber})</div>
+                <div class="project-title">${project.title}</div>
+                <div class="project-images">
+                    <div class="project-image large">
+                        <img src="${largeImage}" alt="${project.title}">
+                    </div>
+                    ${smallImages.map(img => `
+                        <div class="project-image small">
+                            <img src="${img}" alt="${project.title}">
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            projectsList.appendChild(projectItem);
+            
+            // Create folder tab
+            const tab = document.createElement('button');
+            tab.className = 'folder-tab';
+            tab.textContent = projectNumber;
+            tab.dataset.projectId = project.id;
+            if (index === 0) {
+                tab.classList.add('active');
+            }
+            
+            tab.addEventListener('click', () => {
+                activeProjectId = project.id;
+                updateActiveProject(projects, activeProjectId);
+            });
+            
+            folderTabs.appendChild(tab);
+        });
+        
+        // Render initial project details
+        updateProjectDetails(projects[0]);
+    } else {
+        console.log('No projects loaded, showing fallback message');
+        projectsList.innerHTML = '<p>No projects available at the moment.</p>';
+    }
+}
+
+function updateActiveProject(projects, projectId) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+    
+    // Update active states for left column (only one visible)
+    document.querySelectorAll('.project-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.projectId === projectId);
+    });
+    
+    // Update active states for folder tabs
+    document.querySelectorAll('.folder-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.projectId === projectId);
+    });
+    
+    // Update project details in right column
+    updateProjectDetails(project);
+}
+
+function updateProjectDetails(project) {
+    const categoryEl = document.querySelector('.project-category');
+    const descriptionEl = document.querySelector('.project-description');
+    const technologiesEl = document.querySelector('.project-technologies');
+    const linksEl = document.querySelector('.project-links');
+    
+    if (!categoryEl || !descriptionEl || !technologiesEl || !linksEl) return;
+    
+    // Category
+    categoryEl.innerHTML = renderTag(project.tag);
+    
+    // Description
+    const description = extractDescription(project.body);
+    descriptionEl.innerHTML = `<p>${description || 'No description available.'}</p>`;
+    
+    // Technologies (only tool names)
+    const technologies = extractTechnologies(project.body);
+    if (technologies.length > 0) {
+        technologiesEl.innerHTML = technologies.map(tech => 
+            `<span class="keyword-tag">${tech}</span>`
+        ).join('');
+    } else {
+        technologiesEl.innerHTML = '';
+    }
+    
+    // Links (GitHub and Demo)
+    const links = extractLinks(project.body);
+    linksEl.innerHTML = `
+        ${links.github ? `<a href="${links.github}" target="_blank" rel="noreferrer" class="project-link">GitHub</a>` : ''}
+        ${links.demo ? `<a href="${links.demo}" target="_blank" rel="noreferrer" class="project-link">Demo Video</a>` : ''}
+    `;
+    
+    // If no links, show placeholder buttons
+    if (!links.github && !links.demo) {
+        linksEl.innerHTML = `
+            <a href="#" class="project-link" style="opacity: 0.5; pointer-events: none;">GitHub</a>
+            <a href="#" class="project-link" style="opacity: 0.5; pointer-events: none;">Demo Video</a>
+        `;
     }
 }
 function renderPostContent(post) {
@@ -339,28 +498,22 @@ document.addEventListener('DOMContentLoaded', () => {
         // Use fallback if no projects loaded
         if (projects.length === 0) {
             console.log('Using fallback projects data');
-            projects = FALLBACK_PROJECTS;
+            // Convert fallback to include body for description extraction
+            projects = FALLBACK_PROJECTS.map(p => ({
+                ...p,
+                body: ['<p>Project description will be loaded from projects.json</p>']
+            }));
         }
         renderProjects(projects);
     }).catch(error => {
         console.error('Error loading projects:', error);
-        const projectsGrid = document.querySelector('.projects-grid');
-        if (projectsGrid) {
-            console.log('Using fallback projects due to error');
-            projectsGrid.innerHTML = '';
-            FALLBACK_PROJECTS.forEach(project => {
-                console.log('Creating fallback tile for project:', project.title, 'with ID:', project.id);
-                const projectTile = document.createElement('a');
-                projectTile.className = 'card project-tile';
-                projectTile.href = `post.html?slug=${project.id}`;
-                projectTile.innerHTML = `
-                    <h3>${project.title}</h3>
-                    <img src="${project.image}" alt="${project.title} image" style="width:100%;border-radius:10px;margin-bottom:10px">
-                    ${renderTag(project.tag)}
-                `;
-                projectsGrid.appendChild(projectTile);
-            });
-        }
+        console.log('Using fallback projects due to error');
+        // Convert fallback to include body for description extraction
+        const fallbackProjects = FALLBACK_PROJECTS.map(p => ({
+            ...p,
+            body: ['<p>Project description will be loaded from projects.json</p>']
+        }));
+        renderProjects(fallbackProjects);
     });
     // Post page rendering
     if (location.pathname.endsWith('post.html')) {

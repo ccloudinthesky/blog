@@ -867,22 +867,202 @@ h1, h2, h3, h4, h5, h6, .hero h1, .about-banner h1{
     background: linear-gradient(135deg, #f5d8c8, #dfe2e3, #c6ccdf, #709ed0, #acbedd);
 }
 /* Projects grid - 目標設計的網格佈局 */
-.projects .grid {
+/* Projects Layout - Two Column */
+.projects-layout {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: start;
 }
 
 @media (max-width: 1024px) {
-    .projects .grid {
-        grid-template-columns: repeat(2, 1fr);
+    .projects-layout {
+        grid-template-columns: 1fr;
+        gap: 2rem;
     }
 }
 
-@media (max-width: 640px) {
-    .projects .grid {
-        grid-template-columns: 1fr;
-    }
+/* Left Column - Project List (Single Project Display) */
+.projects-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.projects-list {
+    position: relative;
+    min-height: 400px;
+}
+
+.project-item {
+    display: none;
+    transition: all 0.3s ease;
+}
+
+.project-item.active {
+    display: block;
+}
+
+.project-number {
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+}
+
+.project-title {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+
+.project-images {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.project-image {
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background: var(--bg-elev);
+}
+
+.project-image.large {
+    grid-row: span 2;
+    aspect-ratio: 3/4;
+}
+
+.project-image.small {
+    aspect-ratio: 4/3;
+}
+
+.project-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.project-item:hover .project-image img {
+    transform: scale(1.02);
+}
+
+/* Right Column - Project Folder (Folder Style) */
+.projects-right {
+    position: sticky;
+    top: 8rem;
+}
+
+.project-folder {
+    background: var(--text);
+    border-radius: 1.5rem;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.folder-tabs {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+}
+
+.folder-tab {
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.5rem;
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.folder-tab:hover {
+    background: var(--bg-elev);
+    color: var(--text);
+}
+
+.folder-tab.active {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+}
+
+.folder-content {
+    padding: 2.5rem;
+    color: var(--bg);
+}
+
+.project-category {
+    margin-bottom: 1.5rem;
+}
+
+.project-category .tag-pill {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    border-color: var(--bg);
+}
+
+.project-description {
+    margin-bottom: 2rem;
+}
+
+.project-description p {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--bg);
+    margin: 0;
+}
+
+.project-technologies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+.project-technologies .keyword-tag {
+    background: transparent;
+    border-color: var(--bg);
+    color: var(--bg);
+}
+
+.project-links {
+    display: flex;
+    gap: 1rem;
+}
+
+.project-link {
+    flex: 1;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: 1px solid var(--bg);
+    background: transparent;
+    color: var(--bg);
+}
+
+.project-link:hover {
+    background: var(--bg);
+    color: var(--text);
 }
 /* Section Card 風格 */
 .card, .section-card {
