@@ -593,17 +593,52 @@ class ScrollAnimator {
         this.observeNewElements();
     }
 }
+// Timeline Animator for timeline items
+class TimelineAnimator {
+    constructor() {
+        this.items = document.querySelectorAll('.timeline-item');
+        this.init();
+    }
+    init() {
+        this.observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    // Stop observing once animated
+                    this.observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.2,
+            rootMargin: '0px 0px -100px 0px'
+        });
+        // Start observing all timeline items
+        this.items.forEach(item => {
+            this.observer.observe(item);
+        });
+    }
+    refresh() {
+        this.items = document.querySelectorAll('.timeline-item:not(.visible)');
+        this.items.forEach(item => {
+            this.observer.observe(item);
+        });
+    }
+}
+
 // Initialize scroll animations when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     new ScrollAnimator();
+    new TimelineAnimator();
 });
 // Re-initialize animations for dynamically loaded content
 window.addEventListener('load', () => {
     // Small delay to ensure all content is loaded
     setTimeout(() => {
         const animator = new ScrollAnimator();
-        // Make animator globally available for dynamic content
+        const timelineAnimator = new TimelineAnimator();
+        // Make animators globally available for dynamic content
         window.scrollAnimator = animator;
+        window.timelineAnimator = timelineAnimator;
     }, 100);
 });
 export {};

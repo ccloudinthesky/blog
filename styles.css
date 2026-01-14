@@ -788,50 +788,112 @@ h1, h2, h3, h4, h5, h6, .hero h1, .about-banner h1{
     }
 }
 
+.timeline-container {
+    position: relative;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
 .timeline {
     list-style: none;
     margin: 0;
     padding: 0;
     position: relative;
-    max-width: 100%;
+    z-index: 1;
 }
 
+/* 中間的垂直線 */
 .timeline::before {
     content: "";
     position: absolute;
-    left: 0.75rem;
+    left: 50%;
     top: 0;
     bottom: 0;
-    width: 1px;
+    width: 2px;
     background: var(--border);
+    transform: translateX(-50%);
+    z-index: 1;
 }
 
-.timeline li {
+.timeline-item {
     position: relative;
-    margin: 0 0 3rem 0;
+    margin: 0 0 4rem 0;
     display: flex;
-    gap: 1.5rem;
-    align-items: start;
+    align-items: center;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+    z-index: 2;
 }
 
-.timeline .time {
-    font-family: var(--font-body);
-    font-weight: 400;
-    font-size: 1rem;
-    line-height: 1.5;
-    color: var(--muted);
-    margin: 0;
-    min-width: 7.5rem;
+.timeline-item.visible {
+    opacity: 1;
+    transform: translateY(0);
 }
 
-.timeline .event-box {
+/* 中間的圓點 - 垂直對齊到卡片中心 */
+.timeline-item::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    width: 12px;
+    height: 12px;
+    background: var(--text);
+    border-radius: 50%;
+    z-index: 100;
+    border: 2px solid var(--bg);
+    top: 50%;
+    transform: translateX(-50%) translateY(-50%);
+}
+
+/* 左側卡片 */
+.timeline-item[data-side="left"] {
+    justify-content: flex-start;
+}
+
+.timeline-item[data-side="left"] .timeline-content {
+    width: calc(50% - 2rem);
+    margin-right: auto;
+    margin-left: 0;
+}
+
+/* 右側卡片 */
+.timeline-item[data-side="right"] {
+    justify-content: flex-end;
+}
+
+.timeline-item[data-side="right"] .timeline-content {
+    width: calc(50% - 2rem);
+    margin-left: auto;
+    margin-right: 0;
+}
+
+.timeline-content {
+    background: var(--bg-elev);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.timeline-content:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+.timeline-header {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.timeline-header > div {
     flex: 1;
 }
 
-.timeline .event {
+.event {
     font-family: var(--font-display);
     font-weight: 600;
     font-size: 1.25rem;
@@ -840,7 +902,19 @@ h1, h2, h3, h4, h5, h6, .hero h1, .about-banner h1{
     margin: 0 0 0.5rem 0;
 }
 
-.timeline .event-desc {
+.time-badge {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+    background: var(--text);
+    color: var(--bg);
+    border-radius: 9999px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.event-desc {
     font-family: var(--font-body);
     font-weight: 400;
     font-size: 1rem;
@@ -849,17 +923,22 @@ h1, h2, h3, h4, h5, h6, .hero h1, .about-banner h1{
     margin: 0;
 }
 
-.timeline li::before {
-    content: "";
-    position: absolute;
-    left: 0.5rem;
-    top: 0.375rem;
-    width: 0.75rem;
-    height: 0.75rem;
-    background: var(--text);
-    border-radius: 50%;
-    border: 2px solid var(--bg);
-    z-index: 1;
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .timeline::before {
+        left: 1.5rem;
+    }
+    
+    .timeline-item::before {
+        left: 1.5rem;
+    }
+    
+    .timeline-item[data-side="left"] .timeline-content,
+    .timeline-item[data-side="right"] .timeline-content {
+        width: calc(100% - 4rem);
+        margin-left: 4rem;
+        margin-right: 0;
+    }
 }
 
 /* Gradient background for About section on Home */
@@ -1167,6 +1246,12 @@ label{display:grid;gap:6px;color:var(--muted)}
 
 .contact {
     border-top: 1px solid var(--border);
+    padding: 2.5rem 1.5rem 0 1.5rem !important;
+    margin-bottom: 0 !important;
+}
+
+.site-footer {
+    margin-top: 0;
 }
 /* Photo Collections */
 .photo-collections {
@@ -1344,7 +1429,7 @@ label{display:grid;gap:6px;color:var(--muted)}
 .site-footer {
     background: var(--bg);
     color: var(--text);
-    margin-top: 5rem;
+    margin-top: 0;
     border-top: 1px solid var(--border);
 }
 
