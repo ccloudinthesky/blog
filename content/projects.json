@@ -1,40 +1,161 @@
 {
   "project1": {
-    "title": "Automated Order Management System",
-    "date": "2025-06-01",
-    "tag": "UI/UX",
-    "image": "images/projects/flower_cover.png",
+    "title": "TangYuan",
+    "subtitle": "Exchange School Explorer & Student Community Platform",
+    "date": "2025-12-23",
+    "tag": "Full-stack web application",
+    "image": "images/projects/tangyuan-cover.png",
+    "links": [
+      {
+        "url": "https://github.com/ryukyucoding/NTU-exchange-school",
+        "label": "GitHub"
+      },
+      {
+        "url": "https://tang-yuan.vercel.app/",
+        "label": "Live Demo"
+      }
+    ],
     "body": [
-      "<p>A comprehensive mobile e-commerce application designed with user experience at its core. This project involved extensive user research, wireframing, and prototyping.</p>",
+      "<p>TangYuan is a web platform that helps students efficiently find exchange schools that match their academic background and preferences. It offers interactive map and table views, advanced eligibility filters, and a built-in community where students can share experiences, reviews, and insights—turning fragmented information into a single, reliable decision-making hub.</p>",
       "<h3>Project Overview</h3>",
       "<p>This mobile app was designed for a mid-sized retail company looking to expand their digital presence. The challenge was to create an intuitive shopping experience that would work seamlessly across different devices and user contexts.</p>",
       "<h3>Key Features</h3>",
       "<ul>",
-      "<li>Intuitive product browsing and search</li>",
-      "<li>Streamlined checkout process</li>",
-      "<li>Personalized recommendations</li>",
-      "<li>Secure payment integration</li>",
-      "<li>Order tracking and history</li>",
+      "<li>Visualizes all exchange schools on a 3D map with zooming, clickable markers, and detailed pop-up information.</li>",
+      "<li>Displays schools in a structured table with multi-column sorting and filtering.</li>",
+      "<li>Supports both general posts and structured school experience reviews with rating metrics</li>",
       "</ul>",
       "<h3>Design Process</h3>",
       "<p>The design process followed a user-centered approach, starting with extensive user research to understand shopping behaviors and pain points.</p>",
       "<img src=\"images/projects/ecommerce-prototype.jpg\" alt=\"Interactive prototype showing key screens\" style=\"width: 100%; max-width: 600px; height: auto; margin: 20px 0; border-radius: 8px;\">",
       "<h3>Technologies Used</h3>",
       "<ul>",
-      "<li>Figma for wireframing and prototyping</li>",
-      "<li>Adobe XD for advanced interactions</li>",
-      "<li>Principle for micro-interactions</li>",
-      "<li>InVision for user testing</li>",
+      "<li>Next.js</li>",
+      "<li>TypeScript</li>",
+      "<li>Tailwind CSS</li>",
+      "<li>Radix UI</li>",
+      "<li>PostgreSQL</li>",
+      "<li>Pusher</li>",
       "</ul>",
       "<h3>Results</h3>",
       "<p>The final design resulted in a 40% increase in mobile conversion rates and significantly improved user satisfaction scores.</p>"
       ]
   },
   "project2": {
+    "title": "Journee",
+    "subtitle": "Visual Travel Itinerary Planner",
+    "date": "2025-11-01",
+    "tag": ["Design", "full-stack"],
+    "image": "images/projects/journee.png",
+    "links": [
+      {
+        "url": "https://github.com/ccloudinthesky/journee",
+        "label": "GitHub"
+      }
+    ],
+    "body": [
+      "<p>Journee is a travel itinerary planning system that helps users organize saved places into clear, day-by-day travel plans. Instead of keeping all locations in a single Google Maps folder, users can visually arrange destinations using drag-and-drop interactions and map-based feedback, making route planning intuitive and efficient.</p>",
+      "<h3>Key Features</h3>",
+      "<ul>",
+      "<li>Converts customer conversations into structured order data.</li>",
+      "<li>Reduces repetitive manual work and minimizes human error in order handling.</li>",
+      "<li>View, manage, and track all orders and customer records via a web dashboard.</li>",
+      "</ul>",
+      "<h3>Design Process</h3>",
+      "<p>The design process followed a user-centered approach, starting with extensive user research to understand shopping behaviors and pain points.</p>",
+      "<img src=\"images/projects/ecommerce-prototype.jpg\" alt=\"Interactive prototype showing key screens\" style=\"width: 100%; max-width: 600px; height: auto; margin: 20px 0; border-radius: 8px;\">",
+      "<h3>Technologies Used</h3>",
+      "<ul>",
+      "<li>Vue.js</li>",
+      "<li>LINE Bot</li>",
+      "<li>OpenAI API</li>",
+      "<li>Python</li>",
+      "</ul>",
+      "<h3>Results</h3>",
+      "<p>The final design resulted in a 40% increase in mobile conversion rates and significantly improved user satisfaction scores.</p>"
+      ]
+  },
+  "project3": {
+    "title": "ChiMei Floral",
+    "subtitle": "Automated Order Management System",
+    "date": "2025-06-01",
+    "tag": ["UI/UX", "Frontend"],
+    "image": "images/projects/flower_cover.png",
+    "github": "https://github.com/Ocean1029/flower_order_bot",
+    "demo": "https://youtu.be/MIZzgqrMey0",
+    "body": [
+      "<p>ChiMei Floral is a lightweight back-office system for flower shops that turns messy customer chat messages into structured orders. By integrating a LINE Bot with the OpenAI API, the system automatically extracts key order details and stores them in a searchable database—significantly reducing manual transcription and confirmation time for shop owners.</p>",
+      "<h3>Project Overview</h3>",
+      "<p>This mobile app was designed for a mid-sized retail company looking to expand their digital presence. The challenge was to create an intuitive shopping experience that would work seamlessly across different devices and user contexts.</p>",
+      "<h3>Key Features</h3>",
+      "<ul>",
+      "<li>Converts customer conversations into structured order data.</li>",
+      "<li>Reduces repetitive manual work and minimizes human error in order handling.</li>",
+      "<li>View, manage, and track all orders and customer records via a web dashboard.</li>",
+      "</ul>",
+      "<h3>Design Process</h3>",
+      "<p>The design process followed a user-centered approach, starting with extensive user research to understand shopping behaviors and pain points.</p>",
+      "<img src=\"images/projects/ecommerce-prototype.jpg\" alt=\"Interactive prototype showing key screens\" style=\"width: 100%; max-width: 600px; height: auto; margin: 20px 0; border-radius: 8px;\">",
+      "<h3>Technologies Used</h3>",
+      "<ul>",
+      "<li>Vue.js</li>",
+      "<li>LINE Bot</li>",
+      "<li>OpenAI API</li>",
+      "<li>Python</li>",
+      "</ul>",
+      "<h3>Results</h3>",
+      "<p>The final design resulted in a 40% increase in mobile conversion rates and significantly improved user satisfaction scores.</p>"
+      ]
+  },
+  "project4": {
+    "title": "Trustix",
+    "subtitle": "Unofficial second-hand ticket trading platform",
+    "date": "2024-08-20",
+    "tag": ["UX Research", "UI Design"],
+    "image": "images/projects/trustix-cover.png",
+    "links": [
+      {
+        "url": "https://youtu.be/zA1CUmHfUHA",
+        "label": "Demo Video"
+      }
+    ],
+    "body": [
+      "<p>An immersive digital gallery platform that showcases contemporary art collections with an interactive browsing experience. The platform combines elegant design with innovative navigation features.</p>",
+      "<h3>Project Overview</h3>",
+      "<p>This platform was designed to bridge the gap between physical art galleries and digital experiences, allowing art enthusiasts to explore collections from anywhere in the world.</p>",
+      "<h3>Key Features</h3>",
+      "<ul>",
+      "<li>Virtual gallery tours with 360-degree views</li>",
+      "<li>High-resolution artwork viewing</li>",
+      "<li>Curator notes and artist biographies</li>",
+      "<li>Interactive timeline of art movements</li>",
+      "<li>Social sharing capabilities</li>",
+      "<li>Mobile-optimized experience</li>",
+      "</ul>",
+      "<h3>Design Philosophy</h3>",
+      "<p>The design emphasizes minimalism to let the artwork speak for itself, using subtle animations and transitions to enhance the viewing experience without distraction.</p>",
+      "<h3>Technologies Used</h3>",
+      "<ul>",
+      "<li>Figma for interface design</li>",
+      "<li>Three.js for 3D gallery views</li>",
+      "<li>React for interactive components</li>",
+      "<li>GSAP for smooth animations</li>",
+      "</ul>",
+      "<h3>Impact</h3>",
+      "<p>The platform has attracted over 10,000 monthly visitors and received recognition for its innovative approach to digital art presentation.</p>"
+    ]
+  },
+  "project5": {
     "title": "Redesigning Learning Spaces and Innovation Services",
     "date": "2024-11-15",
     "tag": "Service Design",
     "image": "images/projects/service_design_cover.png",
+    "links": [
+      {
+        "url": "https://ccloudd.notion.site/29dc3894a03a81a18723f094eedb770d?source=copy_link",
+        "label": "Article"
+      }
+    ],
     "body": [
       "<p>Complete brand identity design for a local coffee shop, including logo design, color palette, typography, and marketing materials.</p>",
       "<h3>Client Brief</h3>",
@@ -57,7 +178,7 @@
       "<p>The new brand identity helped the cafe increase foot traffic by 25% and establish a strong local presence in the community.</p>"
     ]
   },
-  "project3": {
+  "project6": {
     "title": "EventMate: Event Registration System",
     "date": "2024-11-15",
     "tag": "Web App",
@@ -89,37 +210,6 @@
       "<p>The interface was designed with simplicity and efficiency in mind, ensuring that both technical and non-technical users can easily navigate the system.</p>",
       "<h3>Results</h3>",
       "<p>EventMate has successfully processed over 500 event registrations and received positive feedback from both organizers and attendees for its ease of use and reliability.</p>"
-    ]
-  },
-  "project4": {
-    "title": "Digital Art Gallery Platform",
-    "date": "2024-08-20",
-    "tag": "Web Design",
-    "image": "images/projects/flower_cover.png",
-    "body": [
-      "<p>An immersive digital gallery platform that showcases contemporary art collections with an interactive browsing experience. The platform combines elegant design with innovative navigation features.</p>",
-      "<h3>Project Overview</h3>",
-      "<p>This platform was designed to bridge the gap between physical art galleries and digital experiences, allowing art enthusiasts to explore collections from anywhere in the world.</p>",
-      "<h3>Key Features</h3>",
-      "<ul>",
-      "<li>Virtual gallery tours with 360-degree views</li>",
-      "<li>High-resolution artwork viewing</li>",
-      "<li>Curator notes and artist biographies</li>",
-      "<li>Interactive timeline of art movements</li>",
-      "<li>Social sharing capabilities</li>",
-      "<li>Mobile-optimized experience</li>",
-      "</ul>",
-      "<h3>Design Philosophy</h3>",
-      "<p>The design emphasizes minimalism to let the artwork speak for itself, using subtle animations and transitions to enhance the viewing experience without distraction.</p>",
-      "<h3>Technologies Used</h3>",
-      "<ul>",
-      "<li>Figma for interface design</li>",
-      "<li>Three.js for 3D gallery views</li>",
-      "<li>React for interactive components</li>",
-      "<li>GSAP for smooth animations</li>",
-      "</ul>",
-      "<h3>Impact</h3>",
-      "<p>The platform has attracted over 10,000 monthly visitors and received recognition for its innovative approach to digital art presentation.</p>"
     ]
   }
 }

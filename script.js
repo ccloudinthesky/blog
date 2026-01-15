@@ -46,7 +46,11 @@ const FALLBACK_POSTS = {
 function renderTag(tag) {
     if (!tag)
         return '';
-    return `<span class="badge">${tag}</span>`;
+    
+    // Support both string and array formats
+    const tags = Array.isArray(tag) ? tag : [tag];
+    
+    return tags.map(t => `<span class="badge">${t}</span>`).join('');
 }
 // Navigation toggle functionality
 function initializeNavigation() {
@@ -92,14 +96,33 @@ async function loadProjects() {
         if (response.ok) {
             const projectsData = await response.json();
             console.log('Loaded projects:', projectsData);
-            return Object.entries(projectsData).map(([id, project]) => ({
+            return Object.entries(projectsData).map(([id, project]) => {
+                // Support both new links array format and legacy github/demo format
+                let links = project.links || [];
+                
+                // If using legacy format, convert to new format
+                if (!links.length && (project.github || project.demo)) {
+                    links = [];
+                    if (project.github) {
+                        links.push({ url: project.github, label: 'GitHub' });
+                    }
+                    if (project.demo) {
+                        links.push({ url: project.demo, label: 'Demo' });
+                    }
+                }
+                
+                return {
                 id,
                 title: project.title,
+                    subtitle: project.subtitle || '',
                 date: project.date,
                 tag: project.tag,
                 image: project.image,
-                body: project.body
-            }));
+                    video: project.video || project.gif || '',
+                    body: project.body,
+                    links: links
+                };
+            });
         }
         else {
             console.error('Failed to load projects. Status:', response.status);
@@ -241,11 +264,26 @@ function extractTechnologies(body) {
         const listItems = techMatch[1].match(/<li>(.*?)<\/li>/g);
         if (listItems) {
             return listItems.map(item => {
-                // Extract only the tool name (before "for" or any description)
+                // Extract the full text content
                 let tech = item.replace(/<[^>]*>/g, '').trim();
-                // Remove "for xxx" part
-                tech = tech.split(/ for | - |: /)[0].trim();
                 return tech;
+            });
+        }
+    }
+    return [];
+}
+
+function extractFeatures(body) {
+    if (!body || !Array.isArray(body)) return [];
+    const bodyText = body.join(' ');
+    const featuresMatch = bodyText.match(/<h3>Key Features<\/h3>[\s\S]*?<ul>([\s\S]*?)<\/ul>/i);
+    if (featuresMatch) {
+        const listItems = featuresMatch[1].match(/<li>(.*?)<\/li>/g);
+        if (listItems) {
+            return listItems.map(item => {
+                // Extract the full text content
+                let feature = item.replace(/<[^>]*>/g, '').trim();
+                return feature;
             });
         }
     }
@@ -297,8 +335,8 @@ function renderProjects(projects) {
         return;
     }
     
-    if (projects.length > 0) {
-        console.log('Loading', projects.length, 'projects');
+        if (projects.length > 0) {
+            console.log('Loading', projects.length, 'projects');
         
         // Clear existing content
         projectsList.innerHTML = '';
@@ -307,7 +345,7 @@ function renderProjects(projects) {
         let activeProjectId = projects[0].id;
         
         // Render left column - project list (only one visible at a time)
-        projects.forEach((project, index) => {
+            projects.forEach((project, index) => {
             const projectNumber = String(index + 1).padStart(2, '0');
             
             // Create project item
@@ -316,17 +354,34 @@ function renderProjects(projects) {
             projectItem.dataset.projectId = project.id;
             if (index === 0) {
                 projectItem.classList.add('active');
+                // Add scroll-animate class for initial animation
+                projectItem.classList.add('scroll-animate');
             }
             
-            // Get single image
+            // Get image or video
             const projectImage = project.image;
+            const projectVideo = project.video || project.gif || '';
+            
+            // Determine if we should use video/gif or image
+            const isVideo = projectVideo && (projectVideo.endsWith('.mp4') || projectVideo.endsWith('.webm') || projectVideo.endsWith('.mov'));
+            const isGif = projectVideo && projectVideo.endsWith('.gif');
+            
+            let mediaElement = '';
+            if (isVideo) {
+                mediaElement = `<video src="${projectVideo}" alt="${project.title}" autoplay loop muted playsinline></video>`;
+            } else if (isGif) {
+                mediaElement = `<img src="${projectVideo}" alt="${project.title}">`;
+            } else {
+                mediaElement = `<img src="${projectImage}" alt="${project.title}">`;
+            }
             
             projectItem.innerHTML = `
                 <div class="project-number">(${projectNumber})</div>
                 <div class="project-title">${project.title}</div>
+                ${project.subtitle ? `<div class="project-subtitle">${project.subtitle}</div>` : ''}
                 <div class="project-images">
                     <div class="project-image">
-                        <img src="${projectImage}" alt="${project.title}">
+                        ${mediaElement}
                     </div>
                 </div>
             `;
@@ -351,21 +406,65 @@ function renderProjects(projects) {
         });
         
         // Render initial project details and set z-index
-        updateActiveProject(projects, projects[0].id);
+        // Use setTimeout to ensure DOM is fully ready
+        setTimeout(() => {
+            updateActiveProject(projects, projects[0].id);
+        }, 50);
+        
+        // Trigger initial animation for first project after a short delay
+        setTimeout(() => {
+            const firstItem = document.querySelector('.project-item.active');
+            if (firstItem && firstItem.classList.contains('scroll-animate')) {
+                // Use IntersectionObserver to trigger animation when it comes into view
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('animate-in');
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.1 });
+                
+                observer.observe(firstItem);
+                // Also trigger immediately if already in view
+                if (firstItem.getBoundingClientRect().top < window.innerHeight) {
+                    firstItem.classList.add('animate-in');
+                }
+            }
+        }, 100);
     } else {
-        console.log('No projects loaded, showing fallback message');
+            console.log('No projects loaded, showing fallback message');
         projectsList.innerHTML = '<p>No projects available at the moment.</p>';
+        }
     }
-}
 
 function updateActiveProject(projects, projectId) {
     const project = projects.find(p => p.id === projectId);
     if (!project) return;
     
     // Update active states for left column (only one visible)
-    document.querySelectorAll('.project-item').forEach(item => {
-        item.classList.toggle('active', item.dataset.projectId === projectId);
-    });
+    const allItems = document.querySelectorAll('.project-item');
+    const currentActiveItem = document.querySelector('.project-item.active');
+    const newActiveItem = document.querySelector(`.project-item[data-project-id="${projectId}"]`);
+    
+    if (!newActiveItem) return;
+    
+    // If clicking the same item, do nothing (but still update details if needed)
+    const isSameItem = currentActiveItem === newActiveItem;
+    
+    if (!isSameItem) {
+        // Remove active from current item first (fade out)
+        if (currentActiveItem) {
+            currentActiveItem.classList.remove('active');
+        }
+        
+        // Add active to new item after old item fades out (300ms fade out + small buffer)
+        setTimeout(() => {
+            newActiveItem.classList.add('active');
+            // Trigger animation by forcing reflow
+            void newActiveItem.offsetWidth;
+        }, 350);
+    }
     
     // Update active states and z-index for folder tabs
     const tabs = Array.from(document.querySelectorAll('.folder-tab'));
@@ -392,7 +491,7 @@ function updateActiveProject(projects, projectId) {
         }
     });
     
-    // Update project details in right column
+    // Always update project details in right column (even if same item)
     updateProjectDetails(project);
 }
 
@@ -400,6 +499,7 @@ function updateProjectDetails(project) {
     const categoryEl = document.querySelector('.project-category');
     const descriptionEl = document.querySelector('.project-description');
     const technologiesEl = document.querySelector('.project-technologies');
+    const featuresEl = document.querySelector('.project-features');
     const linksEl = document.querySelector('.project-links');
     
     if (!categoryEl || !descriptionEl || !technologiesEl || !linksEl) return;
@@ -411,7 +511,7 @@ function updateProjectDetails(project) {
     const description = extractDescription(project.body);
     descriptionEl.innerHTML = `<p>${description || 'No description available.'}</p>`;
     
-    // Technologies (only tool names)
+    // Technologies (full text)
     const technologies = extractTechnologies(project.body);
     if (technologies.length > 0) {
         technologiesEl.innerHTML = technologies.map(tech => 
@@ -421,18 +521,30 @@ function updateProjectDetails(project) {
         technologiesEl.innerHTML = '';
     }
     
-    // Links (GitHub and Demo)
-    const links = extractLinks(project.body);
-    linksEl.innerHTML = `
-        ${links.github ? `<a href="${links.github}" target="_blank" rel="noreferrer" class="project-link">GitHub</a>` : ''}
-        ${links.demo ? `<a href="${links.demo}" target="_blank" rel="noreferrer" class="project-link">Demo Video</a>` : ''}
-    `;
+    // Features (Key Features list)
+    if (featuresEl) {
+        const features = extractFeatures(project.body);
+        if (features.length > 0) {
+            featuresEl.innerHTML = `<ul class="project-features-list">${features.map(feature => 
+                `<li>${feature}</li>`
+            ).join('')}</ul>`;
+            featuresEl.style.display = 'block';
+        } else {
+            featuresEl.innerHTML = '';
+            featuresEl.style.display = 'none';
+        }
+    }
     
-    // If no links, show placeholder buttons
-    if (!links.github && !links.demo) {
+    // Links - flexible array format
+    if (project.links && project.links.length > 0) {
+        linksEl.innerHTML = project.links.map(link => 
+            `<a href="${link.url}" target="_blank" rel="noreferrer" class="project-link">${link.label}</a>`
+        ).join('');
+    } else {
+        // If no links, show placeholder buttons
         linksEl.innerHTML = `
             <a href="#" class="project-link" style="opacity: 0.5; pointer-events: none;">GitHub</a>
-            <a href="#" class="project-link" style="opacity: 0.5; pointer-events: none;">Demo Video</a>
+            <a href="#" class="project-link" style="opacity: 0.5; pointer-events: none;">Demo</a>
         `;
     }
 }
@@ -521,7 +633,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderProjects(projects);
     }).catch(error => {
         console.error('Error loading projects:', error);
-        console.log('Using fallback projects due to error');
+            console.log('Using fallback projects due to error');
         // Convert fallback to include body for description extraction
         const fallbackProjects = FALLBACK_PROJECTS.map(p => ({
             ...p,
@@ -640,6 +752,82 @@ window.addEventListener('load', () => {
         window.scrollAnimator = animator;
         window.timelineAnimator = timelineAnimator;
     }, 100);
+    
+    // Adjust photo containers based on actual image dimensions
+    adjustPhotoContainers();
 });
+
+// Function to adjust photo containers based on actual image dimensions
+function adjustPhotoContainers() {
+    // Determine max height based on screen size
+    let maxRowHeight = 250; // 桌面預設
+    if (window.innerWidth <= 480) {
+        maxRowHeight = 150;
+    } else if (window.innerWidth <= 768) {
+        maxRowHeight = 180;
+    }
+    
+    const photoItems = document.querySelectorAll('.photo-item img');
+    
+    photoItems.forEach(img => {
+        // Wait for image to load
+        if (img.complete) {
+            adjustPhotoItem(img, maxRowHeight);
+        } else {
+            img.addEventListener('load', () => {
+                adjustPhotoItem(img, maxRowHeight);
+            });
+        }
+    });
+}
+
+function adjustPhotoItem(img, maxHeight) {
+    const container = img.parentElement;
+    const naturalWidth = img.naturalWidth;
+    const naturalHeight = img.naturalHeight;
+    
+    if (!naturalWidth || !naturalHeight) return;
+    
+    const aspectRatio = naturalWidth / naturalHeight;
+    
+    // Get the base width from the container class
+    let baseWidth = 200; // default
+    if (container.classList.contains('photo-wide')) {
+        baseWidth = 400;
+    } else if (container.classList.contains('photo-square') || 
+               container.classList.contains('photo-rect') || 
+               container.classList.contains('photo-tall')) {
+        baseWidth = 200;
+    }
+    
+    // Responsive base width
+    if (window.innerWidth <= 480) {
+        if (baseWidth === 400) baseWidth = 240;
+        else baseWidth = 120;
+    } else if (window.innerWidth <= 768) {
+        if (baseWidth === 400) baseWidth = 300;
+        else baseWidth = 150;
+    }
+    
+    // Calculate height based on actual aspect ratio
+    let calculatedHeight = baseWidth / aspectRatio;
+    
+    // If calculated height exceeds max height, scale down proportionally
+    if (calculatedHeight > maxHeight) {
+        const scale = maxHeight / calculatedHeight;
+        calculatedHeight = maxHeight;
+        baseWidth = baseWidth * scale;
+    }
+    
+    // Set container dimensions to match image aspect ratio
+    container.style.width = `${baseWidth}px`;
+    container.style.height = `${calculatedHeight}px`;
+    
+    // Set image to fill container while maintaining aspect ratio
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'contain';
+}
+
 export {};
 //# sourceMappingURL=script.js.map
