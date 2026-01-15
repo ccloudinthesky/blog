@@ -10,9 +10,14 @@ export interface Project {
     id: string;
     title: string;
     date: string;
-    tag: string;
+    tag: string | string[];
     image: string;
     body?: string | string[];
+    subtitle?: string;
+    media?: string;
+    links?: Array<{ url: string; label: string }>;
+    github?: string;
+    demo?: string;
 }
 
 export interface Post {

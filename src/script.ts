@@ -49,9 +49,56 @@ const FALLBACK_POSTS: { [key: string]: Post } = {
 };
 
 // Utility functions
-function renderTag(tag: string): string {
+function renderTag(tag: string | string[]): string {
     if (!tag) return '';
-    return `<span class="badge">${tag}</span>`;
+    const tags = Array.isArray(tag) ? tag : [tag];
+    return tags.map(t => `<span class="badge">${t}</span>`).join('');
+}
+
+function extractDescription(body: string | string[] | undefined): string {
+    if (!body || !Array.isArray(body)) return '';
+    // Get the first paragraph that's not a heading
+    for (let i = 0; i < body.length; i++) {
+        const text = body[i];
+        if (text.startsWith('<p>') && !text.includes('<h3>')) {
+            return text.replace(/<[^>]*>/g, '').trim();
+        }
+    }
+    return '';
+}
+
+function extractTechnologies(body: string | string[] | undefined): string[] {
+    if (!body || !Array.isArray(body)) return [];
+    const bodyText = body.join(' ');
+    const techMatch = bodyText.match(/<h3>Technologies Used<\/h3>[\s\S]*?<ul>([\s\S]*?)<\/ul>/i);
+    if (techMatch) {
+        const listItems = techMatch[1].match(/<li>(.*?)<\/li>/g);
+        if (listItems) {
+            return listItems.map(item => {
+                // Extract the full text content
+                let tech = item.replace(/<[^>]*>/g, '').trim();
+                return tech;
+            });
+        }
+    }
+    return [];
+}
+
+function extractFeatures(body: string | string[] | undefined): string[] {
+    if (!body || !Array.isArray(body)) return [];
+    const bodyText = body.join(' ');
+    const featuresMatch = bodyText.match(/<h3>Key Features<\/h3>[\s\S]*?<ul>([\s\S]*?)<\/ul>/i);
+    if (featuresMatch) {
+        const listItems = featuresMatch[1].match(/<li>(.*?)<\/li>/g);
+        if (listItems) {
+            return listItems.map(item => {
+                // Extract the full text content
+                let feature = item.replace(/<[^>]*>/g, '').trim();
+                return feature;
+            });
+        }
+    }
+    return [];
 }
 
 // Navigation toggle functionality
@@ -71,7 +118,7 @@ function initializeNavigation(): void {
 async function loadArticles(): Promise<Article[]> {
     try {
         console.log('Attempting to load articles from content/articles.json');
-        const response = await fetch('content/articles.json');
+        const response = await fetch('/content/articles.json');
         console.log('Response status:', response.status);
         
         if (response.ok) {
@@ -95,7 +142,7 @@ async function loadArticles(): Promise<Article[]> {
 async function loadProjects(): Promise<Project[]> {
     try {
         console.log('Attempting to load projects from content/projects.json');
-        const response = await fetch('content/projects.json');
+        const response = await fetch('/content/projects.json');
         console.log('Response status:', response.status);
         
         if (response.ok) {
@@ -107,7 +154,12 @@ async function loadProjects(): Promise<Project[]> {
                 date: project.date,
                 tag: project.tag,
                 image: project.image,
-                body: project.body
+                body: project.body,
+                subtitle: (project as any).subtitle,
+                media: (project as any).media,
+                links: (project as any).links,
+                github: (project as any).github,
+                demo: (project as any).demo
             }));
         } else {
             console.error('Failed to load projects. Status:', response.status);
@@ -126,7 +178,7 @@ async function loadPostContent(slug: string): Promise<Post | null> {
         // If slug starts with 'project', try projects.json first
         if (slug.startsWith('project')) {
             console.log('Slug starts with project, loading from projects.json');
-            const projectsResponse = await fetch(`content/projects.json`);
+            const projectsResponse = await fetch(`/content/projects.json`);
             if (projectsResponse.ok) {
                 const projects: ProjectsData = await projectsResponse.json();
                 console.log('Projects loaded:', projects);
@@ -148,7 +200,7 @@ async function loadPostContent(slug: string): Promise<Post | null> {
         }
         
         // Try to load from articles.json
-        const articlesResponse = await fetch(`content/articles.json`);
+        const articlesResponse = await fetch(`/content/articles.json`);
         if (articlesResponse.ok) {
             const articles: ArticlesData = await articlesResponse.json();
             if (articles[slug]) {
@@ -164,7 +216,7 @@ async function loadPostContent(slug: string): Promise<Post | null> {
         
         // If not found in articles and not a project, try projects.json as fallback
         if (!slug.startsWith('project')) {
-            const projectsResponse = await fetch(`content/projects.json`);
+            const projectsResponse = await fetch(`/content/projects.json`);
             if (projectsResponse.ok) {
                 const projects: ProjectsData = await projectsResponse.json();
                 if (projects[slug]) {
@@ -249,34 +301,256 @@ function renderArticleList(articles: Article[], year: number): void {
 }
 
 function renderProjects(projects: Project[]): void {
-    const projectsGrid = document.querySelector('.projects-grid');
-    console.log('Projects grid element found:', projectsGrid);
+    const projectsList = document.querySelector('.projects-list');
+    const folderTabs = document.querySelector('.folder-tabs');
+    const folderContent = document.querySelector('.folder-content');
     
-    if (projectsGrid) {
-        if (projects.length > 0) {
-            console.log('Loading', projects.length, 'projects');
-            // Clear existing hardcoded content
-            projectsGrid.innerHTML = '';
+    if (!projectsList || !folderTabs || !folderContent) {
+        console.error('Projects elements not found!', {
+            projectsList: !!projectsList,
+            folderTabs: !!folderTabs,
+            folderContent: !!folderContent
+        });
+        // Retry after a short delay
+        setTimeout(() => {
+            const retryProjectsList = document.querySelector('.projects-list');
+            const retryFolderTabs = document.querySelector('.folder-tabs');
+            const retryFolderContent = document.querySelector('.folder-content');
+            if (retryProjectsList && retryFolderTabs && retryFolderContent) {
+                console.log('Retrying renderProjects...');
+                renderProjects(projects);
+            }
+        }, 100);
+        return;
+    }
+    
+    if (projects.length > 0) {
+        console.log('Loading', projects.length, 'projects');
+        
+        // Clear existing content
+        projectsList.innerHTML = '';
+        folderTabs.innerHTML = '';
+        
+        let activeProjectId = projects[0].id;
+        
+        // Render left column - project list (only one visible at a time)
+        projects.forEach((project, index) => {
+            const projectNumber = String(index + 1).padStart(2, '0');
             
-            projects.forEach((project, index) => {
-                console.log('Creating tile for project:', project.title, 'with ID:', project.id);
-                const projectTile = document.createElement('a');
-                projectTile.className = 'card project-tile';
-                projectTile.href = `post.html?slug=${project.id}`;
-                projectTile.innerHTML = `
-                    <h3>${project.title}</h3>
-                    <img src="${project.image}" alt="${project.title} image" style="width:100%;border-radius:10px;margin-bottom:10px">
-                    ${renderTag(project.tag)}
-                `;
-                projectsGrid.appendChild(projectTile);
+            // Create project item
+            const projectItem = document.createElement('div');
+            projectItem.className = 'project-item';
+            projectItem.setAttribute('data-project-id', project.id);
+            if (index === 0) {
+                projectItem.classList.add('active');
+                // Add scroll-animate class for initial animation
+                projectItem.classList.add('scroll-animate');
+            }
+            
+            // Get image or video - support media field
+            const projectMedia = (project as any).media || project.image;
+            const projectImage = project.image;
+            
+            let mediaElement = '';
+            if (projectMedia) {
+                const fileExtension = projectMedia.split('.').pop()?.toLowerCase();
+                if (fileExtension && ['mp4', 'webm', 'ogg'].includes(fileExtension)) {
+                    mediaElement = `<video src="${projectMedia}" alt="${project.title}" autoplay loop muted playsinline></video>`;
+                } else if (fileExtension && ['gif'].includes(fileExtension)) {
+                    mediaElement = `<img src="${projectMedia}" alt="${project.title}" class="gif-image">`;
+                } else {
+                    mediaElement = `<img src="${projectMedia}" alt="${project.title}">`;
+                }
+            } else {
+                mediaElement = `<img src="${projectImage}" alt="${project.title}">`;
+            }
+            
+            const subtitle = (project as any).subtitle || '';
+            
+            projectItem.innerHTML = `
+                <div class="project-number">(${projectNumber})</div>
+                <div class="project-title">${project.title}</div>
+                ${subtitle ? `<div class="project-subtitle">${subtitle}</div>` : ''}
+                <div class="project-images">
+                    <div class="project-image">
+                        ${mediaElement}
+                    </div>
+                </div>
+            `;
+            
+            projectsList.appendChild(projectItem);
+            
+            // Create folder tab
+            const tab = document.createElement('button');
+            tab.className = 'folder-tab';
+            tab.textContent = projectNumber;
+            tab.setAttribute('data-project-id', project.id);
+            if (index === 0) {
+                tab.classList.add('active');
+            }
+            
+            tab.addEventListener('click', () => {
+                activeProjectId = project.id;
+                updateActiveProject(projects, activeProjectId);
             });
             
-        } else {
-            console.log('No projects loaded, showing fallback message');
-            projectsGrid.innerHTML = '<p>No projects available at the moment.</p>';
-        }
+            folderTabs.appendChild(tab);
+        });
+        
+        // Render initial project details and set z-index
+        // Use setTimeout to ensure DOM is fully ready
+        setTimeout(() => {
+            updateActiveProject(projects, projects[0].id);
+        }, 50);
+        
+        // Trigger initial animation for first project after a short delay
+        setTimeout(() => {
+            const firstItem = document.querySelector('.project-item.active');
+            if (firstItem && firstItem.classList.contains('scroll-animate')) {
+                // Use IntersectionObserver to trigger animation when it comes into view
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('animate-in');
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.1 });
+                
+                observer.observe(firstItem);
+                // Also trigger immediately if already in view
+                if (firstItem.getBoundingClientRect().top < window.innerHeight) {
+                    firstItem.classList.add('animate-in');
+                }
+            }
+        }, 100);
     } else {
-        console.error('Projects grid element not found!');
+        console.log('No projects loaded, showing fallback message');
+        projectsList.innerHTML = '<p>No projects available at the moment.</p>';
+    }
+}
+
+function updateActiveProject(projects: Project[], projectId: string): void {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+    
+    // Update active states for left column (only one visible)
+    const allItems = document.querySelectorAll('.project-item');
+    const currentActiveItem = document.querySelector('.project-item.active');
+    const newActiveItem = document.querySelector(`.project-item[data-project-id="${projectId}"]`);
+    
+    if (!newActiveItem) return;
+    
+    // If clicking the same item, do nothing (but still update details if needed)
+    const isSameItem = currentActiveItem === newActiveItem;
+    
+    if (!isSameItem) {
+        // Remove active from current item first (fade out)
+        if (currentActiveItem) {
+            currentActiveItem.classList.remove('active');
+        }
+        
+        // Add active to new item after old item fades out (300ms fade out + small buffer)
+        setTimeout(() => {
+            newActiveItem.classList.add('active');
+            // Trigger animation by forcing reflow
+            void newActiveItem.getBoundingClientRect();
+        }, 350);
+    }
+    
+    // Update active states and z-index for folder tabs
+    const tabs = Array.from(document.querySelectorAll('.folder-tab'));
+    const activeIndex = tabs.findIndex(tab => tab.getAttribute('data-project-id') === projectId);
+    
+    tabs.forEach((tab, index) => {
+        const isActive = tab.getAttribute('data-project-id') === projectId;
+        tab.classList.toggle('active', isActive);
+        
+        if (isActive) {
+            // 選中的標籤總是在最上層
+            (tab as HTMLElement).style.zIndex = '100';
+        } else {
+            // 計算 z-index：以選中標籤為基準
+            if (index < activeIndex) {
+                // 選中標籤左邊的標籤：越左邊越下層
+                (tab as HTMLElement).style.zIndex = String(index + 1);
+            } else {
+                // 選中標籤右邊的標籤：越右邊越下層
+                // 從右到左，z-index 遞增
+                const distanceFromRight = tabs.length - index;
+                (tab as HTMLElement).style.zIndex = String(distanceFromRight);
+            }
+        }
+    });
+    
+    // Always update project details in right column (even if same item)
+    updateProjectDetails(project);
+}
+
+function updateProjectDetails(project: Project): void {
+    const categoryEl = document.querySelector('.project-category');
+    const descriptionEl = document.querySelector('.project-description');
+    const technologiesEl = document.querySelector('.project-technologies');
+    const featuresEl = document.querySelector('.project-features');
+    const linksEl = document.querySelector('.project-links');
+    
+    if (!categoryEl || !descriptionEl || !technologiesEl || !linksEl) return;
+    
+    // Category
+    categoryEl.innerHTML = renderTag(project.tag);
+    
+    // Description
+    const description = extractDescription(project.body);
+    descriptionEl.innerHTML = `<p>${description || 'No description available.'}</p>`;
+    
+    // Technologies (full text)
+    const technologies = extractTechnologies(project.body);
+    if (technologies.length > 0) {
+        technologiesEl.innerHTML = technologies.map(tech => 
+            `<span class="keyword-tag">${tech}</span>`
+        ).join('');
+    } else {
+        technologiesEl.innerHTML = '';
+    }
+    
+    // Features (Key Features list)
+    if (featuresEl) {
+        const features = extractFeatures(project.body);
+        if (features.length > 0) {
+            featuresEl.innerHTML = `<ul class="project-features-list">${features.map(feature => 
+                `<li>${feature}</li>`
+            ).join('')}</ul>`;
+            (featuresEl as HTMLElement).style.display = 'block';
+        } else {
+            featuresEl.innerHTML = '';
+            (featuresEl as HTMLElement).style.display = 'none';
+        }
+    }
+    
+    // Links - flexible array format
+    const projectLinks = (project as any).links;
+    if (projectLinks && Array.isArray(projectLinks) && projectLinks.length > 0) {
+        linksEl.innerHTML = projectLinks.map((link: any) => 
+            `<a href="${link.url}" target="_blank" rel="noreferrer" class="project-link">${link.label}</a>`
+        ).join('');
+    } else {
+        // Backward compatibility: check for github and demo fields
+        const github = (project as any).github;
+        const demo = (project as any).demo;
+        if (github || demo) {
+            const links: any[] = [];
+            if (github) links.push({ url: github, label: 'GitHub' });
+            if (demo) links.push({ url: demo, label: 'Demo Video' });
+            linksEl.innerHTML = links.map(link => 
+                `<a href="${link.url}" target="_blank" rel="noreferrer" class="project-link">${link.label}</a>`
+            ).join('');
+        } else {
+            // If no links, show placeholder buttons
+            linksEl.innerHTML = `
+                <a href="#" class="project-link" style="opacity: 0.5; pointer-events: none;">GitHub</a>
+                <a href="#" class="project-link" style="opacity: 0.5; pointer-events: none;">Demo</a>
+            `;
+        }
     }
 }
 
@@ -356,37 +630,54 @@ document.addEventListener('DOMContentLoaded', (): void => {
         }
     });
     
-    // Load and populate projects
-    loadProjects().then(projects => {
-        console.log('Projects to display:', projects);
-        
-        // Use fallback if no projects loaded
-        if (projects.length === 0) {
-            console.log('Using fallback projects data');
-            projects = FALLBACK_PROJECTS;
-        }
-        
-        renderProjects(projects);
-    }).catch(error => {
-        console.error('Error loading projects:', error);
-        const projectsGrid = document.querySelector('.projects-grid');
-        if (projectsGrid) {
+    // Load and populate projects - with retry mechanism
+    const loadProjectsWithRetry = (retries: number = 3): void => {
+        loadProjects().then(projects => {
+            console.log('Projects to display:', projects);
+            // Use fallback if no projects loaded
+            if (projects.length === 0) {
+                console.log('Using fallback projects data');
+                // Convert fallback to include body for description extraction
+                projects = FALLBACK_PROJECTS.map(p => ({
+                    ...p,
+                    body: ['<p>Project description will be loaded from projects.json</p>']
+                }));
+            }
+            // Check if elements exist before rendering
+            const projectsList = document.querySelector('.projects-list');
+            const folderTabs = document.querySelector('.folder-tabs');
+            const folderContent = document.querySelector('.folder-content');
+            
+            if (projectsList && folderTabs && folderContent) {
+                renderProjects(projects);
+            } else if (retries > 0) {
+                console.log(`Projects elements not found, retrying... (${retries} retries left)`);
+                setTimeout(() => loadProjectsWithRetry(retries - 1), 200);
+            } else {
+                console.error('Projects elements not found after retries');
+            }
+        }).catch(error => {
+            console.error('Error loading projects:', error);
             console.log('Using fallback projects due to error');
-            projectsGrid.innerHTML = '';
-            FALLBACK_PROJECTS.forEach(project => {
-                console.log('Creating fallback tile for project:', project.title, 'with ID:', project.id);
-                const projectTile = document.createElement('a');
-                projectTile.className = 'card project-tile';
-                projectTile.href = `post.html?slug=${project.id}`;
-                projectTile.innerHTML = `
-                    <h3>${project.title}</h3>
-                    <img src="${project.image}" alt="${project.title} image" style="width:100%;border-radius:10px;margin-bottom:10px">
-                    ${renderTag(project.tag)}
-                `;
-                projectsGrid.appendChild(projectTile);
-            });
-        }
-    });
+            // Convert fallback to include body for description extraction
+            const fallbackProjects = FALLBACK_PROJECTS.map(p => ({
+                ...p,
+                body: ['<p>Project description will be loaded from projects.json</p>']
+            }));
+            // Check if elements exist before rendering
+            const projectsList = document.querySelector('.projects-list');
+            const folderTabs = document.querySelector('.folder-tabs');
+            const folderContent = document.querySelector('.folder-content');
+            
+            if (projectsList && folderTabs && folderContent) {
+                renderProjects(fallbackProjects);
+            } else if (retries > 0) {
+                setTimeout(() => loadProjectsWithRetry(retries - 1), 200);
+            }
+        });
+    };
+    
+    loadProjectsWithRetry();
     
     // Post page rendering
     if (location.pathname.endsWith('post.html')) {

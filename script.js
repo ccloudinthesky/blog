@@ -46,11 +46,54 @@ const FALLBACK_POSTS = {
 function renderTag(tag) {
     if (!tag)
         return '';
-    
-    // Support both string and array formats
     const tags = Array.isArray(tag) ? tag : [tag];
-    
     return tags.map(t => `<span class="badge">${t}</span>`).join('');
+}
+function extractDescription(body) {
+    if (!body || !Array.isArray(body))
+        return '';
+    // Get the first paragraph that's not a heading
+    for (let i = 0; i < body.length; i++) {
+        const text = body[i];
+        if (text.startsWith('<p>') && !text.includes('<h3>')) {
+            return text.replace(/<[^>]*>/g, '').trim();
+        }
+    }
+    return '';
+}
+function extractTechnologies(body) {
+    if (!body || !Array.isArray(body))
+        return [];
+    const bodyText = body.join(' ');
+    const techMatch = bodyText.match(/<h3>Technologies Used<\/h3>[\s\S]*?<ul>([\s\S]*?)<\/ul>/i);
+    if (techMatch) {
+        const listItems = techMatch[1].match(/<li>(.*?)<\/li>/g);
+        if (listItems) {
+            return listItems.map(item => {
+                // Extract the full text content
+                let tech = item.replace(/<[^>]*>/g, '').trim();
+                return tech;
+            });
+        }
+    }
+    return [];
+}
+function extractFeatures(body) {
+    if (!body || !Array.isArray(body))
+        return [];
+    const bodyText = body.join(' ');
+    const featuresMatch = bodyText.match(/<h3>Key Features<\/h3>[\s\S]*?<ul>([\s\S]*?)<\/ul>/i);
+    if (featuresMatch) {
+        const listItems = featuresMatch[1].match(/<li>(.*?)<\/li>/g);
+        if (listItems) {
+            return listItems.map(item => {
+                // Extract the full text content
+                let feature = item.replace(/<[^>]*>/g, '').trim();
+                return feature;
+            });
+        }
+    }
+    return [];
 }
 // Navigation toggle functionality
 function initializeNavigation() {
@@ -96,33 +139,19 @@ async function loadProjects() {
         if (response.ok) {
             const projectsData = await response.json();
             console.log('Loaded projects:', projectsData);
-            return Object.entries(projectsData).map(([id, project]) => {
-                // Support both new links array format and legacy github/demo format
-                let links = project.links || [];
-                
-                // If using legacy format, convert to new format
-                if (!links.length && (project.github || project.demo)) {
-                    links = [];
-                    if (project.github) {
-                        links.push({ url: project.github, label: 'GitHub' });
-                    }
-                    if (project.demo) {
-                        links.push({ url: project.demo, label: 'Demo' });
-                    }
-                }
-                
-                return {
+            return Object.entries(projectsData).map(([id, project]) => ({
                 id,
                 title: project.title,
-                    subtitle: project.subtitle || '',
                 date: project.date,
                 tag: project.tag,
                 image: project.image,
-                    video: project.video || project.gif || '',
-                    body: project.body,
-                    links: links
-                };
-            });
+                body: project.body,
+                subtitle: project.subtitle,
+                media: project.media,
+                links: project.links,
+                github: project.github,
+                demo: project.demo
+            }));
         }
         else {
             console.error('Failed to load projects. Status:', response.status);
@@ -256,80 +285,10 @@ function renderArticleList(articles, year) {
         });
     }
 }
-function extractTechnologies(body) {
-    if (!body || !Array.isArray(body)) return [];
-    const bodyText = body.join(' ');
-    const techMatch = bodyText.match(/<h3>Technologies Used<\/h3>[\s\S]*?<ul>([\s\S]*?)<\/ul>/i);
-    if (techMatch) {
-        const listItems = techMatch[1].match(/<li>(.*?)<\/li>/g);
-        if (listItems) {
-            return listItems.map(item => {
-                // Extract the full text content
-                let tech = item.replace(/<[^>]*>/g, '').trim();
-                return tech;
-            });
-        }
-    }
-    return [];
-}
-
-function extractFeatures(body) {
-    if (!body || !Array.isArray(body)) return [];
-    const bodyText = body.join(' ');
-    const featuresMatch = bodyText.match(/<h3>Key Features<\/h3>[\s\S]*?<ul>([\s\S]*?)<\/ul>/i);
-    if (featuresMatch) {
-        const listItems = featuresMatch[1].match(/<li>(.*?)<\/li>/g);
-        if (listItems) {
-            return listItems.map(item => {
-                // Extract the full text content
-                let feature = item.replace(/<[^>]*>/g, '').trim();
-                return feature;
-            });
-        }
-    }
-    return [];
-}
-
-function extractLinks(body) {
-    if (!body || !Array.isArray(body)) return { github: '', demo: '' };
-    const bodyText = body.join(' ');
-    const links = { github: '', demo: '' };
-    
-    // Try to find GitHub link
-    const githubMatch = bodyText.match(/github\.com\/[^\s"']+/i);
-    if (githubMatch) {
-        links.github = 'https://' + githubMatch[0];
-    }
-    
-    // Try to find demo/video link
-    const demoMatch = bodyText.match(/(?:demo|video|youtube|vimeo)[^\s"']*https?:\/\/[^\s"']+/i);
-    if (demoMatch) {
-        const urlMatch = demoMatch[0].match(/https?:\/\/[^\s"']+/);
-        if (urlMatch) {
-            links.demo = urlMatch[0];
-        }
-    }
-    
-    return links;
-}
-
-function extractDescription(body) {
-    if (!body || !Array.isArray(body)) return '';
-    // Get the first paragraph that's not a heading
-    for (let i = 0; i < body.length; i++) {
-        const text = body[i];
-        if (text.startsWith('<p>') && !text.includes('<h3>')) {
-            return text.replace(/<[^>]*>/g, '').trim();
-        }
-    }
-    return '';
-}
-
 function renderProjects(projects) {
     const projectsList = document.querySelector('.projects-list');
     const folderTabs = document.querySelector('.folder-tabs');
     const folderContent = document.querySelector('.folder-content');
-    
     if (!projectsList || !folderTabs || !folderContent) {
         console.error('Projects elements not found!', {
             projectsList: !!projectsList,
@@ -348,83 +307,74 @@ function renderProjects(projects) {
         }, 100);
         return;
     }
-    
-        if (projects.length > 0) {
-            console.log('Loading', projects.length, 'projects');
-        
+    if (projects.length > 0) {
+        console.log('Loading', projects.length, 'projects');
         // Clear existing content
         projectsList.innerHTML = '';
         folderTabs.innerHTML = '';
-        
         let activeProjectId = projects[0].id;
-        
         // Render left column - project list (only one visible at a time)
-            projects.forEach((project, index) => {
+        projects.forEach((project, index) => {
             const projectNumber = String(index + 1).padStart(2, '0');
-            
             // Create project item
             const projectItem = document.createElement('div');
             projectItem.className = 'project-item';
-            projectItem.dataset.projectId = project.id;
+            projectItem.setAttribute('data-project-id', project.id);
             if (index === 0) {
                 projectItem.classList.add('active');
                 // Add scroll-animate class for initial animation
                 projectItem.classList.add('scroll-animate');
             }
-            
-            // Get image or video
+            // Get image or video - support media field
+            const projectMedia = project.media || project.image;
             const projectImage = project.image;
-            const projectVideo = project.video || project.gif || '';
-            
-            // Determine if we should use video/gif or image
-            const isVideo = projectVideo && (projectVideo.endsWith('.mp4') || projectVideo.endsWith('.webm') || projectVideo.endsWith('.mov'));
-            const isGif = projectVideo && projectVideo.endsWith('.gif');
-            
             let mediaElement = '';
-            if (isVideo) {
-                mediaElement = `<video src="${projectVideo}" alt="${project.title}" autoplay loop muted playsinline></video>`;
-            } else if (isGif) {
-                mediaElement = `<img src="${projectVideo}" alt="${project.title}">`;
-            } else {
+            if (projectMedia) {
+                const fileExtension = projectMedia.split('.').pop()?.toLowerCase();
+                if (fileExtension && ['mp4', 'webm', 'ogg'].includes(fileExtension)) {
+                    mediaElement = `<video src="${projectMedia}" alt="${project.title}" autoplay loop muted playsinline></video>`;
+                }
+                else if (fileExtension && ['gif'].includes(fileExtension)) {
+                    mediaElement = `<img src="${projectMedia}" alt="${project.title}" class="gif-image">`;
+                }
+                else {
+                    mediaElement = `<img src="${projectMedia}" alt="${project.title}">`;
+                }
+            }
+            else {
                 mediaElement = `<img src="${projectImage}" alt="${project.title}">`;
             }
-            
+            const subtitle = project.subtitle || '';
             projectItem.innerHTML = `
                 <div class="project-number">(${projectNumber})</div>
                 <div class="project-title">${project.title}</div>
-                ${project.subtitle ? `<div class="project-subtitle">${project.subtitle}</div>` : ''}
+                ${subtitle ? `<div class="project-subtitle">${subtitle}</div>` : ''}
                 <div class="project-images">
                     <div class="project-image">
                         ${mediaElement}
                     </div>
                 </div>
             `;
-            
             projectsList.appendChild(projectItem);
-            
             // Create folder tab
             const tab = document.createElement('button');
             tab.className = 'folder-tab';
             tab.textContent = projectNumber;
-            tab.dataset.projectId = project.id;
+            tab.setAttribute('data-project-id', project.id);
             if (index === 0) {
                 tab.classList.add('active');
             }
-            
             tab.addEventListener('click', () => {
                 activeProjectId = project.id;
                 updateActiveProject(projects, activeProjectId);
             });
-            
             folderTabs.appendChild(tab);
         });
-        
         // Render initial project details and set z-index
         // Use setTimeout to ensure DOM is fully ready
         setTimeout(() => {
             updateActiveProject(projects, projects[0].id);
         }, 50);
-        
         // Trigger initial animation for first project after a short delay
         setTimeout(() => {
             const firstItem = document.querySelector('.project-item.active');
@@ -438,7 +388,6 @@ function renderProjects(projects) {
                         }
                     });
                 }, { threshold: 0.1 });
-                
                 observer.observe(firstItem);
                 // Also trigger immediately if already in view
                 if (firstItem.getBoundingClientRect().top < window.innerHeight) {
@@ -446,57 +395,53 @@ function renderProjects(projects) {
                 }
             }
         }, 100);
-    } else {
-            console.log('No projects loaded, showing fallback message');
-        projectsList.innerHTML = '<p>No projects available at the moment.</p>';
-        }
     }
-
+    else {
+        console.log('No projects loaded, showing fallback message');
+        projectsList.innerHTML = '<p>No projects available at the moment.</p>';
+    }
+}
 function updateActiveProject(projects, projectId) {
     const project = projects.find(p => p.id === projectId);
-    if (!project) return;
-    
+    if (!project)
+        return;
     // Update active states for left column (only one visible)
     const allItems = document.querySelectorAll('.project-item');
     const currentActiveItem = document.querySelector('.project-item.active');
     const newActiveItem = document.querySelector(`.project-item[data-project-id="${projectId}"]`);
-    
-    if (!newActiveItem) return;
-    
+    if (!newActiveItem)
+        return;
     // If clicking the same item, do nothing (but still update details if needed)
     const isSameItem = currentActiveItem === newActiveItem;
-    
     if (!isSameItem) {
         // Remove active from current item first (fade out)
         if (currentActiveItem) {
             currentActiveItem.classList.remove('active');
         }
-        
         // Add active to new item after old item fades out (300ms fade out + small buffer)
         setTimeout(() => {
             newActiveItem.classList.add('active');
             // Trigger animation by forcing reflow
-            void newActiveItem.offsetWidth;
+            void newActiveItem.getBoundingClientRect();
         }, 350);
     }
-    
     // Update active states and z-index for folder tabs
     const tabs = Array.from(document.querySelectorAll('.folder-tab'));
-    const activeIndex = tabs.findIndex(tab => tab.dataset.projectId === projectId);
-    
+    const activeIndex = tabs.findIndex(tab => tab.getAttribute('data-project-id') === projectId);
     tabs.forEach((tab, index) => {
-        const isActive = tab.dataset.projectId === projectId;
+        const isActive = tab.getAttribute('data-project-id') === projectId;
         tab.classList.toggle('active', isActive);
-        
         if (isActive) {
             // 選中的標籤總是在最上層
             tab.style.zIndex = '100';
-        } else {
+        }
+        else {
             // 計算 z-index：以選中標籤為基準
             if (index < activeIndex) {
                 // 選中標籤左邊的標籤：越左邊越下層
                 tab.style.zIndex = String(index + 1);
-            } else {
+            }
+            else {
                 // 選中標籤右邊的標籤：越右邊越下層
                 // 從右到左，z-index 遞增
                 const distanceFromRight = tabs.length - index;
@@ -504,62 +449,66 @@ function updateActiveProject(projects, projectId) {
             }
         }
     });
-    
     // Always update project details in right column (even if same item)
     updateProjectDetails(project);
 }
-
 function updateProjectDetails(project) {
     const categoryEl = document.querySelector('.project-category');
     const descriptionEl = document.querySelector('.project-description');
     const technologiesEl = document.querySelector('.project-technologies');
     const featuresEl = document.querySelector('.project-features');
     const linksEl = document.querySelector('.project-links');
-    
-    if (!categoryEl || !descriptionEl || !technologiesEl || !linksEl) return;
-    
+    if (!categoryEl || !descriptionEl || !technologiesEl || !linksEl)
+        return;
     // Category
     categoryEl.innerHTML = renderTag(project.tag);
-    
     // Description
     const description = extractDescription(project.body);
     descriptionEl.innerHTML = `<p>${description || 'No description available.'}</p>`;
-    
     // Technologies (full text)
     const technologies = extractTechnologies(project.body);
     if (technologies.length > 0) {
-        technologiesEl.innerHTML = technologies.map(tech => 
-            `<span class="keyword-tag">${tech}</span>`
-        ).join('');
-    } else {
+        technologiesEl.innerHTML = technologies.map(tech => `<span class="keyword-tag">${tech}</span>`).join('');
+    }
+    else {
         technologiesEl.innerHTML = '';
     }
-    
     // Features (Key Features list)
     if (featuresEl) {
         const features = extractFeatures(project.body);
         if (features.length > 0) {
-            featuresEl.innerHTML = `<ul class="project-features-list">${features.map(feature => 
-                `<li>${feature}</li>`
-            ).join('')}</ul>`;
+            featuresEl.innerHTML = `<ul class="project-features-list">${features.map(feature => `<li>${feature}</li>`).join('')}</ul>`;
             featuresEl.style.display = 'block';
-        } else {
+        }
+        else {
             featuresEl.innerHTML = '';
             featuresEl.style.display = 'none';
         }
     }
-    
     // Links - flexible array format
-    if (project.links && project.links.length > 0) {
-        linksEl.innerHTML = project.links.map(link => 
-            `<a href="${link.url}" target="_blank" rel="noreferrer" class="project-link">${link.label}</a>`
-        ).join('');
-    } else {
-        // If no links, show placeholder buttons
-        linksEl.innerHTML = `
-            <a href="#" class="project-link" style="opacity: 0.5; pointer-events: none;">GitHub</a>
-            <a href="#" class="project-link" style="opacity: 0.5; pointer-events: none;">Demo</a>
-        `;
+    const projectLinks = project.links;
+    if (projectLinks && Array.isArray(projectLinks) && projectLinks.length > 0) {
+        linksEl.innerHTML = projectLinks.map((link) => `<a href="${link.url}" target="_blank" rel="noreferrer" class="project-link">${link.label}</a>`).join('');
+    }
+    else {
+        // Backward compatibility: check for github and demo fields
+        const github = project.github;
+        const demo = project.demo;
+        if (github || demo) {
+            const links = [];
+            if (github)
+                links.push({ url: github, label: 'GitHub' });
+            if (demo)
+                links.push({ url: demo, label: 'Demo Video' });
+            linksEl.innerHTML = links.map(link => `<a href="${link.url}" target="_blank" rel="noreferrer" class="project-link">${link.label}</a>`).join('');
+        }
+        else {
+            // If no links, show placeholder buttons
+            linksEl.innerHTML = `
+                <a href="#" class="project-link" style="opacity: 0.5; pointer-events: none;">GitHub</a>
+                <a href="#" class="project-link" style="opacity: 0.5; pointer-events: none;">Demo</a>
+            `;
+        }
     }
 }
 function renderPostContent(post) {
@@ -649,13 +598,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const projectsList = document.querySelector('.projects-list');
             const folderTabs = document.querySelector('.folder-tabs');
             const folderContent = document.querySelector('.folder-content');
-            
             if (projectsList && folderTabs && folderContent) {
                 renderProjects(projects);
-            } else if (retries > 0) {
+            }
+            else if (retries > 0) {
                 console.log(`Projects elements not found, retrying... (${retries} retries left)`);
                 setTimeout(() => loadProjectsWithRetry(retries - 1), 200);
-            } else {
+            }
+            else {
                 console.error('Projects elements not found after retries');
             }
         }).catch(error => {
@@ -670,15 +620,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const projectsList = document.querySelector('.projects-list');
             const folderTabs = document.querySelector('.folder-tabs');
             const folderContent = document.querySelector('.folder-content');
-            
             if (projectsList && folderTabs && folderContent) {
                 renderProjects(fallbackProjects);
-            } else if (retries > 0) {
+            }
+            else if (retries > 0) {
                 setTimeout(() => loadProjectsWithRetry(retries - 1), 200);
             }
         });
     };
-    
     loadProjectsWithRetry();
     // Post page rendering
     if (location.pathname.endsWith('post.html')) {
@@ -744,154 +693,18 @@ class ScrollAnimator {
         this.observeNewElements();
     }
 }
-// Timeline Animator for timeline items
-class TimelineAnimator {
-    constructor() {
-        this.items = document.querySelectorAll('.timeline-item');
-        this.init();
-    }
-    init() {
-        this.observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                    // Stop observing once animated
-                    this.observer.unobserve(entry.target);
-                }
-            });
-        }, {
-            threshold: 0.2,
-            rootMargin: '0px 0px -100px 0px'
-        });
-        // Start observing all timeline items
-        this.items.forEach(item => {
-            this.observer.observe(item);
-        });
-    }
-    refresh() {
-        this.items = document.querySelectorAll('.timeline-item:not(.visible)');
-        this.items.forEach(item => {
-            this.observer.observe(item);
-        });
-    }
-}
-
 // Initialize scroll animations when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     new ScrollAnimator();
-    new TimelineAnimator();
 });
 // Re-initialize animations for dynamically loaded content
 window.addEventListener('load', () => {
     // Small delay to ensure all content is loaded
     setTimeout(() => {
         const animator = new ScrollAnimator();
-        const timelineAnimator = new TimelineAnimator();
-        // Make animators globally available for dynamic content
+        // Make animator globally available for dynamic content
         window.scrollAnimator = animator;
-        window.timelineAnimator = timelineAnimator;
     }, 100);
-    
-    // Adjust photo containers based on actual image dimensions
-    adjustPhotoContainers();
 });
-
-// Function to adjust photo containers based on actual image dimensions
-function adjustPhotoContainers() {
-    // Determine max height based on screen size
-    let maxRowHeight = 250; // 桌面預設
-    if (window.innerWidth <= 480) {
-        maxRowHeight = 150;
-    } else if (window.innerWidth <= 768) {
-        maxRowHeight = 180;
-    }
-    
-    // Use IntersectionObserver for better performance with lazy loading
-    const photoItems = document.querySelectorAll('.photo-item img');
-    
-    if ('IntersectionObserver' in window) {
-        const imageObserver = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const img = entry.target;
-                    if (img.complete && img.naturalWidth > 0) {
-                        adjustPhotoItem(img, maxRowHeight);
-                    } else {
-                        img.addEventListener('load', () => {
-                            adjustPhotoItem(img, maxRowHeight);
-                        }, { once: true });
-                    }
-                    observer.unobserve(img);
-                }
-            });
-        }, {
-            rootMargin: '50px' // Start loading slightly before image enters viewport
-        });
-        
-        photoItems.forEach(img => {
-            imageObserver.observe(img);
-        });
-    } else {
-        // Fallback for browsers without IntersectionObserver
-        photoItems.forEach(img => {
-            if (img.complete) {
-                adjustPhotoItem(img, maxRowHeight);
-            } else {
-                img.addEventListener('load', () => {
-                    adjustPhotoItem(img, maxRowHeight);
-                }, { once: true });
-            }
-        });
-    }
-}
-
-function adjustPhotoItem(img, maxHeight) {
-    const container = img.parentElement;
-    const naturalWidth = img.naturalWidth;
-    const naturalHeight = img.naturalHeight;
-    
-    if (!naturalWidth || !naturalHeight) return;
-    
-    const aspectRatio = naturalWidth / naturalHeight;
-    
-    // Get the base width from the container class
-    let baseWidth = 200; // default
-    if (container.classList.contains('photo-wide')) {
-        baseWidth = 400;
-    } else if (container.classList.contains('photo-square') || 
-               container.classList.contains('photo-rect') || 
-               container.classList.contains('photo-tall')) {
-        baseWidth = 200;
-    }
-    
-    // Responsive base width
-    if (window.innerWidth <= 480) {
-        if (baseWidth === 400) baseWidth = 240;
-        else baseWidth = 120;
-    } else if (window.innerWidth <= 768) {
-        if (baseWidth === 400) baseWidth = 300;
-        else baseWidth = 150;
-    }
-    
-    // Calculate height based on actual aspect ratio
-    let calculatedHeight = baseWidth / aspectRatio;
-    
-    // If calculated height exceeds max height, scale down proportionally
-    if (calculatedHeight > maxHeight) {
-        const scale = maxHeight / calculatedHeight;
-        calculatedHeight = maxHeight;
-        baseWidth = baseWidth * scale;
-    }
-    
-    // Set container dimensions to match image aspect ratio
-    container.style.width = `${baseWidth}px`;
-    container.style.height = `${calculatedHeight}px`;
-    
-    // Set image to fill container while maintaining aspect ratio
-    img.style.width = '100%';
-    img.style.height = '100%';
-    img.style.objectFit = 'contain';
-}
-
 export {};
 //# sourceMappingURL=script.js.map
