@@ -499,9 +499,24 @@ function updateProjectDetails(project: Project): void {
     // Category
     categoryEl.innerHTML = renderTag(project.tag);
     
-    // Description
-    const description = extractDescription(project.body);
-    descriptionEl.innerHTML = `<p>${description || 'No description available.'}</p>`;
+    // Description - extract all paragraphs until first heading
+    const descriptionParts: string[] = [];
+    if (project.body && Array.isArray(project.body)) {
+        for (let i = 0; i < project.body.length; i++) {
+            const text = project.body[i];
+            if (text.startsWith('<h3>')) {
+                break; // Stop at first heading
+            }
+            if (text.startsWith('<p>')) {
+                descriptionParts.push(text);
+            }
+        }
+    }
+    if (descriptionParts.length > 0) {
+        descriptionEl.innerHTML = descriptionParts.join('');
+    } else {
+        descriptionEl.innerHTML = '<p>No description available.</p>';
+    }
     
     // Technologies (full text)
     const technologies = extractTechnologies(project.body);
