@@ -67,7 +67,7 @@ function initializeNavigation() {
 async function loadArticles() {
     try {
         console.log('Attempting to load articles from content/articles.json');
-        const response = await fetch('content/articles.json');
+        const response = await fetch('/content/articles.json');
         console.log('Response status:', response.status);
         if (response.ok) {
             const articlesData = await response.json();
@@ -91,7 +91,7 @@ async function loadArticles() {
 async function loadProjects() {
     try {
         console.log('Attempting to load projects from content/projects.json');
-        const response = await fetch('content/projects.json');
+        const response = await fetch('/content/projects.json');
         console.log('Response status:', response.status);
         if (response.ok) {
             const projectsData = await response.json();
@@ -140,7 +140,7 @@ async function loadPostContent(slug) {
         // If slug starts with 'project', try projects.json first
         if (slug.startsWith('project')) {
             console.log('Slug starts with project, loading from projects.json');
-            const projectsResponse = await fetch(`content/projects.json`);
+            const projectsResponse = await fetch(`/content/projects.json`);
             if (projectsResponse.ok) {
                 const projects = await projectsResponse.json();
                 console.log('Projects loaded:', projects);
@@ -163,7 +163,7 @@ async function loadPostContent(slug) {
             }
         }
         // Try to load from articles.json
-        const articlesResponse = await fetch(`content/articles.json`);
+        const articlesResponse = await fetch(`/content/articles.json`);
         if (articlesResponse.ok) {
             const articles = await articlesResponse.json();
             if (articles[slug]) {
@@ -178,7 +178,7 @@ async function loadPostContent(slug) {
         }
         // If not found in articles and not a project, try projects.json as fallback
         if (!slug.startsWith('project')) {
-            const projectsResponse = await fetch(`content/projects.json`);
+            const projectsResponse = await fetch(`/content/projects.json`);
             if (projectsResponse.ok) {
                 const projects = await projectsResponse.json();
                 if (projects[slug]) {
