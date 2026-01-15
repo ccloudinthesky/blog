@@ -331,7 +331,21 @@ function renderProjects(projects) {
     const folderContent = document.querySelector('.folder-content');
     
     if (!projectsList || !folderTabs || !folderContent) {
-        console.error('Projects elements not found!');
+        console.error('Projects elements not found!', {
+            projectsList: !!projectsList,
+            folderTabs: !!folderTabs,
+            folderContent: !!folderContent
+        });
+        // Retry after a short delay
+        setTimeout(() => {
+            const retryProjectsList = document.querySelector('.projects-list');
+            const retryFolderTabs = document.querySelector('.folder-tabs');
+            const retryFolderContent = document.querySelector('.folder-content');
+            if (retryProjectsList && retryFolderTabs && retryFolderContent) {
+                console.log('Retrying renderProjects...');
+                renderProjects(projects);
+            }
+        }, 100);
         return;
     }
     
@@ -618,29 +632,54 @@ document.addEventListener('DOMContentLoaded', () => {
             yearFilter.addEventListener('click', handleYearFilterClick);
         }
     });
-    // Load and populate projects
-    loadProjects().then(projects => {
-        console.log('Projects to display:', projects);
-        // Use fallback if no projects loaded
-        if (projects.length === 0) {
-            console.log('Using fallback projects data');
+    // Load and populate projects - with retry mechanism
+    const loadProjectsWithRetry = (retries = 3) => {
+        loadProjects().then(projects => {
+            console.log('Projects to display:', projects);
+            // Use fallback if no projects loaded
+            if (projects.length === 0) {
+                console.log('Using fallback projects data');
+                // Convert fallback to include body for description extraction
+                projects = FALLBACK_PROJECTS.map(p => ({
+                    ...p,
+                    body: ['<p>Project description will be loaded from projects.json</p>']
+                }));
+            }
+            // Check if elements exist before rendering
+            const projectsList = document.querySelector('.projects-list');
+            const folderTabs = document.querySelector('.folder-tabs');
+            const folderContent = document.querySelector('.folder-content');
+            
+            if (projectsList && folderTabs && folderContent) {
+                renderProjects(projects);
+            } else if (retries > 0) {
+                console.log(`Projects elements not found, retrying... (${retries} retries left)`);
+                setTimeout(() => loadProjectsWithRetry(retries - 1), 200);
+            } else {
+                console.error('Projects elements not found after retries');
+            }
+        }).catch(error => {
+            console.error('Error loading projects:', error);
+            console.log('Using fallback projects due to error');
             // Convert fallback to include body for description extraction
-            projects = FALLBACK_PROJECTS.map(p => ({
+            const fallbackProjects = FALLBACK_PROJECTS.map(p => ({
                 ...p,
                 body: ['<p>Project description will be loaded from projects.json</p>']
             }));
-        }
-        renderProjects(projects);
-    }).catch(error => {
-        console.error('Error loading projects:', error);
-            console.log('Using fallback projects due to error');
-        // Convert fallback to include body for description extraction
-        const fallbackProjects = FALLBACK_PROJECTS.map(p => ({
-            ...p,
-            body: ['<p>Project description will be loaded from projects.json</p>']
-        }));
-        renderProjects(fallbackProjects);
-    });
+            // Check if elements exist before rendering
+            const projectsList = document.querySelector('.projects-list');
+            const folderTabs = document.querySelector('.folder-tabs');
+            const folderContent = document.querySelector('.folder-content');
+            
+            if (projectsList && folderTabs && folderContent) {
+                renderProjects(fallbackProjects);
+            } else if (retries > 0) {
+                setTimeout(() => loadProjectsWithRetry(retries - 1), 200);
+            }
+        });
+    };
+    
+    loadProjectsWithRetry();
     // Post page rendering
     if (location.pathname.endsWith('post.html')) {
         const params = new URLSearchParams(location.search);
@@ -767,18 +806,43 @@ function adjustPhotoContainers() {
         maxRowHeight = 180;
     }
     
+    // Use IntersectionObserver for better performance with lazy loading
     const photoItems = document.querySelectorAll('.photo-item img');
     
-    photoItems.forEach(img => {
-        // Wait for image to load
-        if (img.complete) {
-            adjustPhotoItem(img, maxRowHeight);
-        } else {
-            img.addEventListener('load', () => {
-                adjustPhotoItem(img, maxRowHeight);
+    if ('IntersectionObserver' in window) {
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    if (img.complete && img.naturalWidth > 0) {
+                        adjustPhotoItem(img, maxRowHeight);
+                    } else {
+                        img.addEventListener('load', () => {
+                            adjustPhotoItem(img, maxRowHeight);
+                        }, { once: true });
+                    }
+                    observer.unobserve(img);
+                }
             });
-        }
-    });
+        }, {
+            rootMargin: '50px' // Start loading slightly before image enters viewport
+        });
+        
+        photoItems.forEach(img => {
+            imageObserver.observe(img);
+        });
+    } else {
+        // Fallback for browsers without IntersectionObserver
+        photoItems.forEach(img => {
+            if (img.complete) {
+                adjustPhotoItem(img, maxRowHeight);
+            } else {
+                img.addEventListener('load', () => {
+                    adjustPhotoItem(img, maxRowHeight);
+                }, { once: true });
+            }
+        });
+    }
 }
 
 function adjustPhotoItem(img, maxHeight) {
